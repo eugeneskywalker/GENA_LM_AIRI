@@ -12,13 +12,14 @@ Critical review and reproducibility experiments on:
 
 ## TL;DR
 
-I extended the GENA-LM analysis with three frozen-model experiments on `gena-lm-bert-base-t2t` (110M) and a baseline alternative architecture:
+I extended the GENA-LM analysis with four frozen-model experiments on `gena-lm-bert-base-t2t` (110M) and a baseline alternative architecture:
 
 - **E1 — Layer-wise linear probing** on 4 binary regulatory tasks. Best F1=0.915 (coding, layer 5); promoter peaks at layer 4 (F1=0.81) — confirming BERTology-style mid-layer feature accumulation in a DNA foundation model.
 - **E4 — Multilayer UMAP clustering** of 4 functional DNA classes from layers 0/4/12. Silhouette peaks at the mid layer (0.164 vs 0.111/0.124), validating the E1 hypothesis that the last layer is task-aligned to MLM, not optimal for downstream geometry.
 - **E3 — GENA-LM vs HyenaDNA head-to-head** on the same 4 tasks. **HyenaDNA-tiny (0.4 M params) wins 3 of 4 tasks against GENA-LM-base (110.7 M)** — a 277× smaller, alternative-architecture (Hyena, single-nucleotide) model. Direct empirical confirmation of the DART-Eval (NeurIPS 2024) finding that current DNA LMs do not offer compelling gains over lighter alternatives.
+- **E5 — In silico saturation mutagenesis on CTCF motif.** For 100 synthetic sequences with a JASPAR MA0139.1-sampled CTCF motif, single-nucleotide substitutions at each motif position move motif-region embeddings proportionally to consensus dissimilarity (**Pearson r = 0.893** for substitution effect vs `1 − PWM_prob`; **r = 0.421** for position-wise PWM information content vs mean effect). GENA-LM has **learned the canonical CTCF binding grammar** — addresses weakness W10 (token importance ≠ causality).
 
-All experiments run on a single **Tesla V100S 32 GB** in **≈12 minutes total**; no fine-tuning, no pre-training.
+All experiments run on a single **Tesla V100S 32 GB** in **≈15 minutes total**; no fine-tuning, no pre-training.
 
 ## Results
 
@@ -58,6 +59,21 @@ Full metrics: [`results/e4_multilayer_metrics.json`](results/e4_multilayer_metri
 
 Same frozen-embedding + linear probing protocol. Numbers: [`results/tables/e3_results.csv`](results/tables/e3_results.csv), full JSON: [`results/e3_metrics.json`](results/e3_metrics.json). _(DNABERT-2 attempted as a third baseline, failed to load — einops conflict.)_
 
+### E5 — In silico saturation mutagenesis on CTCF
+
+![E5 CTCF saturation](results/figures/e5_ctcf_saturation.png)
+
+For 100 synthetic 400-bp sequences with a CTCF motif (JASPAR MA0139.1) inserted at position 200, we substituted each of the 19 motif positions with each alternative nucleotide (57 substitutions per sequence) and measured the cosine distance between motif-region embeddings of original vs mutant.
+
+| Metric | Value | Interpretation |
+|---|---|---|
+| Pearson r (full off-consensus map vs `1 − PWM_prob`) | **0.893** | Substitution effect tracks consensus dissimilarity very tightly |
+| Pearson r (position-wise IC vs mean effect) | **0.421** | Informative motif positions show larger mutation effect |
+
+**Conclusion:** GENA-LM has learned the canonical CTCF binding grammar — single-nucleotide changes at positions important per the experimentally derived PWM produce proportionally larger embedding shifts. This is the **causal** interpretation counterpart to the **correlational** token-importance analysis in Figure 2 of the original paper (closes weakness W10).
+
+Full metrics: [`results/e5_metrics.json`](results/e5_metrics.json).
+
 ## Repository structure
 
 ```
@@ -68,14 +84,16 @@ gena-lm-airi-2026/
 │   ├── e1_layerwise_probing.py    # E1 — main BERTology experiment
 │   ├── e3_gena_vs_caduceus.py     # E3 — head-to-head with HyenaDNA
 │   ├── e4_clustering.py           # E4 warm-up (last layer only)
-│   └── e4_clustering_multilayer.py  # E4 v2 (L0/L4/L12 comparison)
+│   ├── e4_clustering_multilayer.py  # E4 v2 (L0/L4/L12 comparison)
+│   └── e5_saturation_mutagenesis.py  # E5 — CTCF motif in silico mutagenesis
 ├── slurm/                         # sbatch scripts for V100 cluster
 │   ├── setup_env.sh               # conda env create
 │   ├── sbatch_sanity.sh
 │   ├── sbatch_e1.sh
 │   ├── sbatch_e3.sh
 │   ├── sbatch_e4.sh
-│   └── sbatch_e4v2.sh
+│   ├── sbatch_e4v2.sh
+│   └── sbatch_e5.sh
 ├── results/
 │   ├── figures/                   # PNG plots (3 figures)
 │   ├── tables/e1_results.csv
@@ -104,6 +122,9 @@ sbatch slurm/sbatch_e1.sh
 
 # 5. E3 — GENA-LM vs HyenaDNA (~4 min, downloads tiny HyenaDNA on first run)
 sbatch slurm/sbatch_e3.sh
+
+# 6. E5 — CTCF saturation mutagenesis (~2 min, 5800 forward passes)
+sbatch slurm/sbatch_e5.sh
 ```
 
 Outputs land in `~/gena-lm-airi/results/{figures,tables}/`.

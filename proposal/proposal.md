@@ -43,13 +43,14 @@ Additionally, the paper never asks **where inside the network** functional infor
 
 ## 5. Proposed improvement
 
-**Layer-aware feature analysis of GENA-LM + head-to-head with a modern alternative.** Three complementary, frozen-model experiments:
+**Layer-aware feature analysis of GENA-LM + head-to-head with a modern alternative + causal motif probing.** Four complementary, frozen-model experiments:
 
 - **E1 — Layer-wise linear probing** of 4 binary regulatory tasks across all 13 layers (embedding + 12 transformer layers). This is the BERTology methodology (Tenney et al. 2019; Vig et al. 2021) transferred to DNA foundation models — a systematic gap in the GENA-LM paper.
 - **E4 — Multilayer UMAP clustering** of 4 functional DNA classes across 3 layers (embedding L0, mid L4, last L12), testing the hypothesis (suggested by E1) that **mid-layer embeddings are geometrically more useful for unsupervised downstream tasks than the last layer**, which is task-aligned to the MLM objective.
 - **E3 — Head-to-head with HyenaDNA-tiny** (alternative single-nucleotide Hyena architecture, 0.4 M params). Same 4 tasks, same probing protocol. Directly addresses W7 (no comparison with non-BPE alternatives) and tests the central claim of DART-Eval (NeurIPS 2024 A\*): that *current DNA LMs do not offer compelling gains over lighter alternatives.* DNABERT-2 was attempted as a third baseline but failed to load (`einops` dependency conflict with `transformers 4.36` — reported as a known issue).
+- **E5 — In silico saturation mutagenesis on the CTCF motif.** For 100 synthetic sequences with a JASPAR MA0139.1-sampled CTCF motif inserted, substitute each motif position with each alternative nucleotide and measure how the motif-region embedding moves (cosine distance). Compare the resulting saturation map against the experimentally derived PWM. This is the **causal interpretation** counterpart to the **correlational** token-importance analysis in Figure 2 of the paper — directly closes weakness W10.
 
-All three directly extend the paper's Figure 4 (species-level layer analysis only) to **functional categories** within the human genome and to **architectural alternatives** — strictly within-scope and biologically motivated.
+All four directly extend the paper's Figure 4 (species-level layer analysis only) and Figure 2 (correlational token attribution only) to **functional categories**, **architectural alternatives**, and **causal motif probing** — strictly within-scope and biologically motivated.
 
 ## 6. Experimental setup
 
@@ -105,9 +106,22 @@ Same probing protocol applied to a much smaller alternative-architecture baselin
 
 **HyenaDNA wins 3/4 tasks with 277× fewer parameters** — only on coding (where BPE token / k-mer composition is highly informative) does GENA-LM lead, and by a small margin. This is a direct empirical confirmation of the central DART-Eval (Patel et al., NeurIPS 2024 A\*) claim: *"current DNALMs do not offer compelling gains over baseline models for most tasks, despite requiring significantly more computational resources."* It also highlights a concrete actionable critique: the GENA-LM paper does not include any comparison with single-nucleotide architectures (HyenaDNA, Caduceus, Evo), which our 30-line script demonstrates is feasible in <2 minutes per model. *(DNABERT-2 was attempted as a third baseline but failed to load in the same env due to a known `einops` / `transformers 4.36` interaction.)*
 
+### E5 — In silico saturation mutagenesis on CTCF
+
+![E5 CTCF saturation](../results/figures/e5_ctcf_saturation.png)
+
+For 100 synthetic sequences with a CTCF motif (JASPAR MA0139.1) inserted between 200-bp flanks, we substituted each of the 19 motif positions with each of the 3 alternative nucleotides (57 substitutions × 100 sequences = 5,700 mutants + 100 originals = 5,800 forward passes). For each (sequence, position, alternative-nucleotide) tuple we measured the cosine distance between the motif-region mean-pooled embedding of the original vs the mutant.
+
+| Metric | Value | Interpretation |
+|---|---|---|
+| Pearson r — full off-consensus map vs `1 − PWM_prob` | **0.893** | Substitution effect tracks consensus dissimilarity very tightly |
+| Pearson r — per-position PWM information content vs mean effect | **0.421** | Informative motif positions show larger mutation effect on average |
+
+The strong correlation between `1 − PWM_prob` and substitution effect (r = 0.893) means that **whenever GENA-LM is shown an off-consensus mutant at a given position, the magnitude of its embedding response is almost linearly predicted by how rare that nucleotide is in real CTCF binding sites**. This is exactly what one would expect from a model that has internalised the canonical CTCF binding grammar — and it is a strictly **causal** interpretation, in contrast to the **correlational** integrated-gradients analysis in Figure 2 of the original paper. The position-wise r = 0.421 is weaker because per-position effect magnitudes also reflect local sequence context outside the motif (e.g. position 5, IC = 0.57, shows a high effect — possibly due to neighbouring core positions 4 and 6 having IC ≈ 1.8).
+
 ## 8. Expected contribution and follow-ups
 
-(i) A reproducible BERTology pipeline for DNA foundation models (open-sourced, single V100, ≈ 12 minutes total for all three experiments); (ii) the first systematic layer-aware decomposition of GENA-LM features, showing mid-layer specialisation; (iii) empirical evidence (E3) that a 277× smaller alternative-architecture model (HyenaDNA-tiny) matches or beats GENA-LM on 3 of 4 regulatory tasks — confirming the DART-Eval critique; (iv) a practical guideline for downstream users — *don't use the last layer if you're not fine-tuning, and don't assume larger is better*. **Natural follow-ups** for the summer-school project itself include: replicating on `gena-lm-bert-large-t2t` (24 layers, 336 M params) to test whether deeper models reorganise feature hierarchy; running E1 + E3 on **Caduceus** (ICML 2024 A\*) once `mamba_ssm` builds cleanly on Volta; and adding a **DART-Eval Task 2 / 4** head-to-head, which would close W12 entirely.
+(i) A reproducible BERTology pipeline for DNA foundation models (open-sourced, single V100, ≈ 15 minutes total for all four experiments); (ii) the first systematic layer-aware decomposition of GENA-LM features, showing mid-layer specialisation; (iii) empirical evidence (E3) that a 277× smaller alternative-architecture model (HyenaDNA-tiny) matches or beats GENA-LM on 3 of 4 regulatory tasks — confirming the DART-Eval critique; (iv) **causal evidence that GENA-LM has internalised the canonical CTCF binding grammar** (E5: r = 0.893 between substitution effect and `1 − PWM_prob`), closing weakness W10; (v) practical guidelines for downstream users — *don't use the last layer if you're not fine-tuning, and don't assume larger is better*. **Natural follow-ups** for the summer-school project itself include: replicating on `gena-lm-bert-large-t2t` (24 layers, 336 M params) to test whether deeper models reorganise feature hierarchy; running E1 + E3 + E5 on **Caduceus** (ICML 2024 A\*) once `mamba_ssm` builds cleanly on Volta; adding a **DART-Eval Task 2 / 4** head-to-head, which would close W12 entirely; and extending E5 to additional TF motifs (GATA2, ATF1 from the original paper) to test motif-grammar generality.
 
 ## 9. References
 
