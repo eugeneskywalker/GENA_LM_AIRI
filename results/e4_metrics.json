@@ -1,0 +1,23 @@
+{
+  "experiment": "E4 embedding clustering",
+  "model": "AIRI-Institute/gena-lm-bert-base-t2t",
+  "n_per_class": 500,
+  "classes": [
+    "promoter",
+    "enhancer",
+    "ocr",
+    "negative"
+  ],
+  "metrics": {
+    "silhouette_cosine": 0.12361656874418259,
+    "nmi": 0.4256808830292812,
+    "ari": 0.37476136515949293
+  },
+  "embedding_dim": 768,
+  "datasets": {
+    "promoter": "katarinagresova/Genomic_Benchmarks_human_nontata_promoters",
+    "enhancer": "katarinagresova/Genomic_Benchmarks_human_enhancers_cohn",
+    "ocr": "katarinagresova/Genomic_Benchmarks_human_ocr_ensembl",
+    "negative": "katarinagresova/Genomic_Benchmarks_human_nontata_promoters"
+  }
+}

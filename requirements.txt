@@ -1,0 +1,18 @@
+# GENA-LM experiments — minimal Python deps
+# Pinned to versions tested on Tesla V100S 32GB (Volta sm_70, CUDA 12.1).
+# Custom GENA-LM `modeling_bert.py` uses `find_pruneable_heads_and_indices`
+# (removed in transformers >= 5.0), so transformers must be <5.0.
+
+torch==2.5.1+cu121          # install via: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+transformers==4.36.2
+datasets>=2.16
+accelerate>=0.25
+scikit-learn>=1.3
+umap-learn>=0.5
+numpy
+pandas
+matplotlib
+seaborn
+biopython
+loguru
+tqdm

@@ -1,0 +1,39 @@
+{
+  "experiment": "E4 v2 multilayer clustering",
+  "model": "AIRI-Institute/gena-lm-bert-base-t2t",
+  "n_per_class": 500,
+  "classes": [
+    "promoter",
+    "enhancer",
+    "ocr",
+    "negative"
+  ],
+  "layers_compared": [
+    0,
+    4,
+    12
+  ],
+  "metrics_per_layer": {
+    "layer_0": {
+      "silhouette": 0.11127997934818268,
+      "nmi": 0.4323608340061795,
+      "ari": 0.36556255265742466
+    },
+    "layer_4": {
+      "silhouette": 0.16362325847148895,
+      "nmi": 0.42929101708051676,
+      "ari": 0.32532780235690045
+    },
+    "layer_12": {
+      "silhouette": 0.12361656874418259,
+      "nmi": 0.4256808830292812,
+      "ari": 0.37476136515949293
+    }
+  },
+  "datasets": {
+    "promoter": "katarinagresova/Genomic_Benchmarks_human_nontata_promoters",
+    "enhancer": "katarinagresova/Genomic_Benchmarks_human_enhancers_cohn",
+    "ocr": "katarinagresova/Genomic_Benchmarks_human_ocr_ensembl",
+    "negative": "katarinagresova/Genomic_Benchmarks_human_nontata_promoters"
+  }
+}

@@ -1,0 +1,9 @@
+model,params_M,task,f1_mean,f1_std,mcc_mean,auc_mean,extract_time_s
+GENA-LM-base,110.7,promoter,0.7774,0.0118,0.5515,0.8733,1.7
+GENA-LM-base,110.7,enhancer,0.6274,0.0126,0.2515,0.6678,2.4
+GENA-LM-base,110.7,ocr,0.5646,0.0232,0.1180,0.5977,2.3
+GENA-LM-base,110.7,coding,0.8874,0.0026,0.7756,0.9649,1.6
+HyenaDNA-tiny,0.4,promoter,0.7900,0.0040,0.5898,0.8624,1.5
+HyenaDNA-tiny,0.4,enhancer,0.6786,0.0103,0.3536,0.7390,1.2
+HyenaDNA-tiny,0.4,ocr,0.6080,0.0147,0.2157,0.6509,2.5
+HyenaDNA-tiny,0.4,coding,0.8617,0.0153,0.7225,0.9416,0.6

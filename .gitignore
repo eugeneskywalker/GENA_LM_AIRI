@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.ipynb_checkpoints/
+
+# Envs
+.venv/
+venv/
+env/
+
+# Model weights / caches (HF cache should live outside the repo)
+hf-cache/
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# Large intermediates
+*.npz
+*.npy
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs from SLURM (already captured in results/)
+logs/
+slurm-*.out
+*.err
+
+# Notebooks (we don't ship them)
+*.ipynb
