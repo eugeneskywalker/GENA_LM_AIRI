@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "experiment": "E3 + E3-v2 — frozen-embedding probing, GENA-LM vs HyenaDNA",
+    "metric": "F1 (mean ± std over 3 seeds, logistic-regression probe on frozen mean-pooled embeddings)",
+    "n_per_class": 500,
+    "headline_naive": "Naïve last-layer comparison: HyenaDNA wins 3 of 4 tasks with 277× fewer parameters.",
+    "headline_corrected": "Read GENA-LM at its best-per-task layer (E1): GENA-LM wins or ties on 3 of 4 tasks.",
+    "narrative": "The contrast between these two views is the methodological point of the proposal. The familiar 'big foundation model loses to tiny architecture' story partly reflects a layer-choice artefact: GENA-LM's last hidden layer is pulled toward the MLM objective, not toward downstream biology. E1 showed peak biological signal at L4–L5; reading the embeddings from there flips the head-to-head. The durable guideline is: do not query the last layer if you are not fine-tuning.",
+    "scope_caveats": [
+      "Frozen-probing regime only — authors' fine-tuned numbers are substantially higher (e.g. promoter F1 ≈ 0.94 with 2 kb context).",
+      "Single GENA-LM variant (bert-base-t2t, 110.7 M, 4.5 kb max context).",
+      "Single HyenaDNA variant (tiny-1k-seqlen, 0.44 M).",
+      "Short-range regulatory tasks only — long-range tasks (where GENA-LM has architectural advantage) are not tested here."
+    ],
+    "size_ratio": 251,
+    "wins": {
+      "last_layer": { "hyena": 3, "gena": 1 },
+      "best_layer": { "gena": 2, "hyena": 1, "tie": 1 }
+    },
+    "dnabert2_note": "DNABERT-2 was a planned third baseline but failed to load on V100 (transformers compatibility); excluded from comparison."
+  },
+  "models": {
+    "gena": { "label": "GENA-LM bert-base-t2t", "params_M": 110.7, "embedding_dim": 768, "arch": "Transformer + BPE" },
+    "hyena": { "label": "HyenaDNA tiny-1k-seqlen", "params_M": 0.44, "embedding_dim": 128, "arch": "Hyena (long-conv SSM) + single-nucleotide" }
+  },
+  "comparisons": {
+    "last_layer": {
+      "label": "GENA-LM @ last layer (L12)",
+      "data": [
+        { "task": "Promoter", "gena": 0.777, "gena_std": 0.012, "hyena": 0.790, "hyena_std": 0.004, "winner": "hyena", "delta": 0.013 },
+        { "task": "Enhancer", "gena": 0.627, "gena_std": 0.013, "hyena": 0.679, "hyena_std": 0.010, "winner": "hyena", "delta": 0.052 },
+        { "task": "OCR",      "gena": 0.565, "gena_std": 0.023, "hyena": 0.608, "hyena_std": 0.015, "winner": "hyena", "delta": 0.043 },
+        { "task": "Coding",   "gena": 0.887, "gena_std": 0.003, "hyena": 0.862, "hyena_std": 0.015, "winner": "gena",  "delta": 0.025 }
+      ]
+    },
+    "best_layer": {
+      "label": "GENA-LM @ E1-best layer per task",
+      "data": [
+        { "task": "Promoter", "gena": 0.808, "gena_std": 0.006, "gena_layer": 4, "hyena": 0.790, "hyena_std": 0.004, "winner": "gena",  "delta": 0.018 },
+        { "task": "Enhancer", "gena": 0.662, "gena_std": 0.026, "gena_layer": 1, "hyena": 0.679, "hyena_std": 0.010, "winner": "hyena", "delta": 0.017 },
+        { "task": "OCR",      "gena": 0.615, "gena_std": 0.027, "gena_layer": 2, "hyena": 0.608, "hyena_std": 0.015, "winner": "tie",   "delta": 0.007 },
+        { "task": "Coding",   "gena": 0.915, "gena_std": 0.010, "gena_layer": 5, "hyena": 0.862, "hyena_std": 0.015, "winner": "gena",  "delta": 0.053 }
+      ]
+    }
+  }
+}

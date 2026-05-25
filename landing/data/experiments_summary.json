@@ -1,0 +1,115 @@
+{
+  "_meta": {
+    "purpose": "Compact summary of all 8 experiments + extensions, for non-interactive sections of the landing page (table, badges, footer)",
+    "total_wallclock_minutes": 36,
+    "hardware": "Single Tesla V100S 32GB · Aldan3 cluster (Pirogov RNIMU)",
+    "env": "Python 3.11 · PyTorch 2.5.1+cu121 · transformers 4.36.2 · conda env `gena`"
+  },
+  "experiments": [
+    {
+      "id": "E1",
+      "title": "Layer-wise probing (bert-base, 13 layers)",
+      "core": true,
+      "wallclock_min": 8,
+      "tasks": 4,
+      "seeds": 3,
+      "outcome": "Mid-layer peak (L4–L5) for promoter and coding; near-chance at all layers for enhancer/OCR.",
+      "closes_weakness": "Extends Fig 4D of the paper with task-resolved layer-wise view; foundation for E3-v2 and E4.",
+      "figure": "results/figures/e1_layerwise_probing.png"
+    },
+    {
+      "id": "E3",
+      "title": "GENA-LM vs HyenaDNA (last layer)",
+      "core": true,
+      "wallclock_min": 4,
+      "outcome": "Naïve last-layer comparison: HyenaDNA wins 3/4 (Promoter, Enhancer, OCR); GENA-LM wins on Coding.",
+      "closes_weakness": "W7 (no SSM comparison) + W12 (no DART-Eval-style critique).",
+      "scope": "Frozen-probing on short-range regulatory tasks only."
+    },
+    {
+      "id": "E3-v2",
+      "title": "GENA-LM @ E1-best layer per task",
+      "extension": true,
+      "wallclock_min": 3,
+      "outcome": "Re-running with best layer per task: GENA-LM wins on Promoter (L4) and Coding (L5), ties on OCR, loses on Enhancer. Flips the head-to-head narrative.",
+      "lesson": "The naïve 'HyenaDNA wins 3/4' result is partly a layer-choice artefact. Practical guideline from E4 — do not query the last layer if not fine-tuning — is the durable finding."
+    },
+    {
+      "id": "E4",
+      "title": "Multilayer UMAP clustering (L0/L4/L12)",
+      "core": true,
+      "wallclock_min": 3,
+      "outcome": "Best silhouette at L4 (0.164) vs L0 (0.111), L12 (0.124). NMI flat across layers — total information preserved, geometry differs.",
+      "metrics": {
+        "L0":  { "silhouette": 0.111, "nmi": 0.432, "ari": 0.366 },
+        "L4":  { "silhouette": 0.164, "nmi": 0.429, "ari": 0.325 },
+        "L12": { "silhouette": 0.124, "nmi": 0.426, "ari": 0.375 }
+      },
+      "figure": "results/figures/e4_multilayer_umap.png"
+    },
+    {
+      "id": "E5",
+      "title": "In silico CTCF saturation mutagenesis + negative control",
+      "core": true,
+      "wallclock_min": 4,
+      "outcome": "Pearson r = 0.893 between substitution effect and (1 − PWM_prob). Negative control at non-motif positions gives 15× smaller effect (0.0004 vs 0.0060).",
+      "closes_weakness": "W10 (token importance ≠ causality) with a positive, counterfactual result.",
+      "figure": "results/figures/e5_ctcf_saturation.png"
+    },
+    {
+      "id": "E6",
+      "title": "DART-Eval-inspired 4-way (OCR proxy)",
+      "core": true,
+      "wallclock_min": 1,
+      "outcome": "GENA-LM (110.7M, frozen) AUROC=0.658 vs 3-mer+LogReg (65 features) 0.647 — +1.1% from a 110M-param foundation model. HyenaDNA wins overall (0.688). TinyCNN (104k params, supervised) ties GENA-LM.",
+      "closes_weakness": "W12 (no DART-Eval comparison) — proxy task, formal DART-Eval is natural follow-up.",
+      "table": [
+        { "model": "3-mer + LogReg (no DL)",    "params": 65,         "auroc": 0.647, "auprc": 0.633, "f1": 0.609, "mcc": 0.212 },
+        { "model": "TinyCNN (supervised)",       "params": 104001,     "auroc": 0.661, "auprc": 0.629, "f1": 0.679, "mcc": 0.229 },
+        { "model": "GENA-LM-base (frozen)",     "params": 110650880,  "auroc": 0.658, "auprc": 0.641, "f1": 0.611, "mcc": 0.212 },
+        { "model": "HyenaDNA-tiny (frozen)",     "params": 436096,     "auroc": 0.688, "auprc": 0.661, "f1": 0.646, "mcc": 0.259 }
+      ]
+    },
+    {
+      "id": "E1-large",
+      "title": "Layer-wise probing on bert-large (336M, 24 layers)",
+      "extension": true,
+      "wallclock_min": 6,
+      "outcome": "Mid-layer pattern replicates at proportional depth (L8–L11 of 24). Enhancer F1 jumps 0.66 → 0.73 (+0.07), OCR 0.62 → 0.67 (+0.05). Long-range tasks need scale or longer context.",
+      "table": [
+        { "task": "Promoter",  "best_layer": 11, "f1": 0.809, "delta_vs_base": 0.000 },
+        { "task": "Enhancer",  "best_layer": 9,  "f1": 0.732, "delta_vs_base": 0.070 },
+        { "task": "OCR",       "best_layer": 22, "f1": 0.667, "delta_vs_base": 0.052 },
+        { "task": "Coding",    "best_layer": 8,  "f1": 0.943, "delta_vs_base": 0.028 }
+      ]
+    },
+    {
+      "id": "E7",
+      "title": "GENA-LM fine-tuned on promoter (calibration)",
+      "extension": true,
+      "wallclock_min": 15,
+      "outcome": "3-epoch fine-tune, 512-token windows, 3 seeds: F1 = 0.794 ± 0.004. Frozen best-layer (0.808) is actually higher; gap to authors' published 0.94 (with 2 kb context, longer training, likely bert-large) sets scope on our frozen-probing claims.",
+      "table": [
+        { "regime": "Frozen probing, last layer (E3)",                  "f1": 0.777, "f1_std": 0.012 },
+        { "regime": "Frozen probing, best layer L4 (E3-v2)",            "f1": 0.808, "f1_std": 0.006 },
+        { "regime": "Fine-tuned, 3 epochs, 512 tokens (E7)",            "f1": 0.794, "f1_std": 0.004 },
+        { "regime": "Authors' published fine-tuned, 2 kb (NAR 2025)",   "f1": 0.940, "f1_std": null }
+      ]
+    }
+  ],
+  "limitations_scope": [
+    "Frozen-probing only — authors' published fine-tuned numbers are substantially higher.",
+    "E6 uses an OCR-based proxy, not the formal DART-Eval Task 1–5 pipeline (Synapse access required).",
+    "Single GENA-LM variant tested (bert-base-t2t, 4.5 kb max). BigBird/RMT variants — where GENA-LM has architectural advantage on long-range tasks — are not tested.",
+    "Single HyenaDNA variant (tiny-1k-seqlen, 0.44 M); larger variants may compress or invert the gap.",
+    "Short-range tasks only in head-to-head (≤ 1–2 kb). Long-range tasks where GENA-LM is documented to outperform HyenaDNA are deliberately not included.",
+    "Per-task sample sizes 2k–5k limit statistical power; F1 deltas of 0.01–0.05 are near seed-noise resolution.",
+    "E5 is counterfactual in silico — stronger than correlational attribution but weaker than functional perturbation in a reporter assay. Negative control (15× smaller effect at random non-motif positions) rules out generic BPE-tokenisation sensitivity."
+  ],
+  "weaknesses_closed": {
+    "W6": { "name": "Sample efficiency in cross-species transfer unmeasured", "addressed": false, "note": "Proposed as E2 future work." },
+    "W7": { "name": "No comparison with SSM (Caduceus) or modern alternatives", "addressed": true,  "by": ["E3", "E3-v2", "E6"] },
+    "W10":{ "name": "Token importance ≠ causality",                            "addressed": true,  "by": ["E5", "E5-control"] },
+    "W12":{ "name": "No evaluation on DART-Eval (NeurIPS 2024) benchmark",      "addressed": true,  "by": ["E6"], "note": "DART-Eval-inspired proxy; formal benchmark is follow-up." }
+  }
+}
