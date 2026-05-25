@@ -127,8 +127,13 @@ def batch_motif_embeddings(seqs, motif_start, motif_end, tokenizer, model, devic
 
 
 def main(n_seqs=100, flank_len=200, model_name="AIRI-Institute/gena-lm-bert-base-t2t",
-         results_dir="/home/ekorshunov/gena-lm-airi/results", seed=42, batch_size=32):
-    print(f"=== E5 CTCF saturation mutagenesis (embedding-distance) ===", flush=True)
+         results_dir="/home/ekorshunov/gena-lm-airi/results", seed=42, batch_size=32,
+         control_mode=False):
+    """control_mode=True: mutate random positions OUTSIDE the motif (negative control).
+    Expected r ≈ 0 if the original r=0.893 reflects learned CTCF grammar rather than
+    a generic BPE-tokenisation artefact at any single-nucleotide substitution."""
+    mode_tag = "CONTROL (out-of-motif positions)" if control_mode else "MOTIF (CTCF positions)"
+    print(f"=== E5 CTCF saturation mutagenesis (embedding-distance) | {mode_tag} ===", flush=True)
     print(f"n_seqs={n_seqs}, flank={flank_len}, batch={batch_size}", flush=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"device: {device}", flush=True)
@@ -159,21 +164,32 @@ def main(n_seqs=100, flank_len=200, model_name="AIRI-Institute/gena-lm-bert-base
     print(f"  example: ...{seqs[0][motif_start-3:motif_end+3]}...", flush=True)
 
     # Build all mutant sequences
-    print(f"\nBuilding mutant sequences...", flush=True)
+    # MOTIF mode: mutate positions inside [motif_start, motif_end) — the CTCF motif itself.
+    # CONTROL mode: mutate MOTIF_LEN random positions in the FLANK (outside the motif).
+    # Embedding is still mean-pooled over the motif region in both modes — so control answers:
+    # "does mutating random flank positions also perturb the motif representation?"
+    # If yes ≈ same magnitude → BPE-generic sensitivity; if no ≪ → motif-specific (CTCF learned).
+    print(f"\nBuilding mutant sequences (mode = {mode_tag})...", flush=True)
     all_seqs = []
     indexing = []
+    control_positions_per_seq = []  # only populated in control_mode
     for seq_idx, seq in enumerate(seqs):
         all_seqs.append(seq)
         indexing.append((seq_idx, -1, -1))
-        for p in range(MOTIF_LEN):
-            pos_in_seq = motif_start + p
+        if control_mode:
+            valid = list(range(0, motif_start)) + list(range(motif_end, len(seq)))
+            positions = rng.choice(valid, size=MOTIF_LEN, replace=False).tolist()
+            control_positions_per_seq.append(positions)
+        else:
+            positions = [motif_start + p for p in range(MOTIF_LEN)]
+        for p_idx, pos_in_seq in enumerate(positions):
             orig_nuc = seq[pos_in_seq]
             for alt_idx, alt in enumerate(NUCLEOTIDES):
                 if alt == orig_nuc:
                     continue
                 mutant = seq[:pos_in_seq] + alt + seq[pos_in_seq + 1:]
                 all_seqs.append(mutant)
-                indexing.append((seq_idx, p, alt_idx))
+                indexing.append((seq_idx, p_idx, alt_idx))
     print(f"  total: {len(all_seqs)} = {n_seqs} * (1 + {MOTIF_LEN}*3)", flush=True)
 
     # Compute motif-region embeddings
@@ -200,15 +216,26 @@ def main(n_seqs=100, flank_len=200, model_name="AIRI-Institute/gena-lm-bert-base
 
     mean_effect = saturation.mean(axis=0)  # (19, 4)
     pos_mean_effect = mean_effect.sum(axis=1) / 3.0  # average over 3 substitutions
+    overall_mean_effect = float(mean_effect[mean_effect != 0].mean()) if (mean_effect != 0).any() else 0.0
+    overall_std_effect = float(mean_effect[mean_effect != 0].std()) if (mean_effect != 0).any() else 0.0
 
-    pearson_pos = float(np.corrcoef(pos_mean_effect, ic)[0, 1])
-    print(f"\nPearson r (position-wise: mean substitution effect vs PWM IC): {pearson_pos:.3f}", flush=True)
+    print(f"\nOverall mean cosine distance across all mutations: {overall_mean_effect:.4f} ± {overall_std_effect:.4f}", flush=True)
 
-    # Per-element: substitution effect should be larger where (1-PWM) is larger (off-consensus subs)
-    inv_pwm = 1.0 - CTCF_PWM
-    mask = mean_effect != 0
-    pearson_full = float(np.corrcoef(mean_effect[mask], inv_pwm[mask])[0, 1])
-    print(f"Pearson r (full off-consensus map vs (1-PWM_prob)): {pearson_full:.3f}", flush=True)
+    if control_mode:
+        # PWM-correlation is undefined for random flank positions (no per-position consensus).
+        pearson_pos = float("nan")
+        pearson_full = float("nan")
+        print("\n(Control mode: PWM correlations are N/A — positions are random in flank.)", flush=True)
+        print("Compare overall_mean_effect with the motif-mode value to interpret CTCF specificity:", flush=True)
+        print("  motif-mode  → if much larger than control → model is CTCF-specific (learned grammar)", flush=True)
+        print("  control     → if comparable to motif → BPE-generic sensitivity (artefact)", flush=True)
+    else:
+        pearson_pos = float(np.corrcoef(pos_mean_effect, ic)[0, 1])
+        print(f"\nPearson r (position-wise: mean substitution effect vs PWM IC): {pearson_pos:.3f}", flush=True)
+        inv_pwm = 1.0 - CTCF_PWM
+        mask = mean_effect != 0
+        pearson_full = float(np.corrcoef(mean_effect[mask], inv_pwm[mask])[0, 1])
+        print(f"Pearson r (full off-consensus map vs (1-PWM_prob)): {pearson_full:.3f}", flush=True)
 
     print(f"\nPer-position mean effect:", flush=True)
     for p in range(MOTIF_LEN):
@@ -253,21 +280,27 @@ def main(n_seqs=100, flank_len=200, model_name="AIRI-Institute/gena-lm-bert-base
 
     metrics = {
         "experiment": "E5 CTCF saturation mutagenesis (embedding-distance)",
+        "mode": "control_out_of_motif" if control_mode else "motif",
         "model": model_name,
         "n_sequences": n_seqs,
         "motif_len": int(MOTIF_LEN),
         "flank_len": flank_len,
         "metric": "1 - cosine_similarity(emb_orig, emb_mut) at motif region",
+        "overall_mean_effect": overall_mean_effect,
+        "overall_std_effect": overall_std_effect,
         "pearson_r_pos_IC_vs_effect": pearson_pos,
         "pearson_r_full_map_off_consensus": pearson_full,
         "info_content_per_position": ic.tolist(),
         "mean_effect_per_position": pos_mean_effect.tolist(),
         "saturation_map_19x4_ACGT": mean_effect.tolist(),
         "PWM_19x4_ACGT": CTCF_PWM.tolist(),
+        "control_positions_per_seq": control_positions_per_seq if control_mode else None,
     }
-    with open(results_dir / "e5_metrics.json", "w") as f:
+    suffix = "_control" if control_mode else ""
+    out_path = results_dir / f"e5_metrics{suffix}.json"
+    with open(out_path, "w") as f:
         json.dump(metrics, f, indent=2)
-    print(f"Saved: {results_dir / 'e5_metrics.json'}", flush=True)
+    print(f"Saved: {out_path}", flush=True)
 
 
 if __name__ == "__main__":
@@ -276,5 +309,8 @@ if __name__ == "__main__":
     ap.add_argument("--flank", type=int, default=200)
     ap.add_argument("--bs", type=int, default=32)
     ap.add_argument("--model", type=str, default="AIRI-Institute/gena-lm-bert-base-t2t")
+    ap.add_argument("--control", action="store_true",
+                    help="Negative control: mutate random positions outside motif (expect overall_mean_effect ≪ motif-mode value if CTCF learned).")
     args = ap.parse_args()
-    main(n_seqs=args.n, flank_len=args.flank, model_name=args.model, batch_size=args.bs)
+    main(n_seqs=args.n, flank_len=args.flank, model_name=args.model, batch_size=args.bs,
+         control_mode=args.control)

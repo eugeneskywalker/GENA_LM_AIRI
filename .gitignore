@@ -39,3 +39,6 @@ slurm-*.out
 
 # Notebooks (we don't ship them)
 *.ipynb
+
+# Obsidian vault metadata (local only)
+.obsidian/

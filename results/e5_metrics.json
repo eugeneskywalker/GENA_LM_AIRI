@@ -1,10 +1,13 @@
 {
   "experiment": "E5 CTCF saturation mutagenesis (embedding-distance)",
+  "mode": "motif",
   "model": "AIRI-Institute/gena-lm-bert-base-t2t",
   "n_sequences": 100,
   "motif_len": 19,
   "flank_len": 200,
   "metric": "1 - cosine_similarity(emb_orig, emb_mut) at motif region",
+  "overall_mean_effect": 0.005982841378764102,
+  "overall_std_effect": 0.00265355419394419,
   "pearson_r_pos_IC_vs_effect": 0.42077918208825305,
   "pearson_r_full_map_off_consensus": 0.8927849213897117,
   "info_content_per_position": [
@@ -280,5 +283,6 @@
       0.6235294117647059,
       0.002352941176470588
     ]
-  ]
+  ],
+  "control_positions_per_seq": null
 }

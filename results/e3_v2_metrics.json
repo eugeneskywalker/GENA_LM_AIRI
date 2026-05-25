@@ -1,0 +1,86 @@
+{
+  "experiment": "E3-v2: GENA-LM @ best-per-task layer vs HyenaDNA-tiny",
+  "n_per_class": 500,
+  "results": {
+    "GENA-LM-base @ best-per-task layer": {
+      "params_M": 110.7,
+      "best_layer_per_task": {
+        "promoter": 4,
+        "enhancer": 1,
+        "ocr": 2,
+        "coding": 5
+      },
+      "tasks": {
+        "promoter": {
+          "f1_mean": 0.8077534682998501,
+          "f1_std": 0.006418289195787639,
+          "mcc_mean": 0.6207440988448681,
+          "auc_mean": 0.8857037037037037,
+          "layer": 4,
+          "extract_time_s": 10.0
+        },
+        "enhancer": {
+          "f1_mean": 0.6621247117482646,
+          "f1_std": 0.0261255686560635,
+          "mcc_mean": 0.3103786164787721,
+          "auc_mean": 0.6976296296296297,
+          "layer": 1,
+          "extract_time_s": 9.7
+        },
+        "ocr": {
+          "f1_mean": 0.6146673077912467,
+          "f1_std": 0.026563636805927007,
+          "mcc_mean": 0.23162846272732648,
+          "auc_mean": 0.6370222222222223,
+          "layer": 2,
+          "extract_time_s": 10.7
+        },
+        "coding": {
+          "f1_mean": 0.9148112692375546,
+          "f1_std": 0.01025991246338266,
+          "mcc_mean": 0.829015214669175,
+          "auc_mean": 0.9732148148148149,
+          "layer": 5,
+          "extract_time_s": 5.5
+        }
+      }
+    },
+    "HyenaDNA-tiny": {
+      "params_M": 0.44,
+      "tasks": {
+        "promoter": {
+          "f1_mean": 0.789980148195344,
+          "f1_std": 0.004032197883224365,
+          "mcc_mean": 0.5898070356508781,
+          "auc_mean": 0.8624296296296295,
+          "layer": "last",
+          "extract_time_s": 1.9
+        },
+        "enhancer": {
+          "f1_mean": 0.6786372573890106,
+          "f1_std": 0.010334971883644602,
+          "mcc_mean": 0.35360833927877966,
+          "auc_mean": 0.7390222222222222,
+          "layer": "last",
+          "extract_time_s": 1.3
+        },
+        "ocr": {
+          "f1_mean": 0.6079796259589106,
+          "f1_std": 0.014728716270401045,
+          "mcc_mean": 0.21567456079211367,
+          "auc_mean": 0.650888888888889,
+          "layer": "last",
+          "extract_time_s": 2.3
+        },
+        "coding": {
+          "f1_mean": 0.8617111274039817,
+          "f1_std": 0.015333105469413843,
+          "mcc_mean": 0.7224509624897427,
+          "auc_mean": 0.9415851851851852,
+          "layer": "last",
+          "extract_time_s": 0.6
+        }
+      }
+    }
+  }
+}
