@@ -42,3 +42,6 @@ slurm-*.out
 
 # Obsidian vault metadata (local only)
 .obsidian/
+
+# Brainstorm session artifacts (superpowers visual companion)
+.superpowers/

@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>GENA-LM · анализ и развитие</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper:      #F4F1EA;
+    --paper-2:    #F0EDE4;
+    --paper-3:    #EBE7DC;
+    --ink:        #1A1A1A;
+    --ink-2:      #2C2C2C;
+    --gray:       #6E6963;
+    --gray-2:     #9A958E;
+    --hairline:   #D9D4C8;
+    --magenta:    #E94B8B;
+    --alert:      #DC2626;
+    --dna-1: #4A90E2; --dna-2: #8E5BD8; --dna-3: #E94B8B;
+    --dna-4: #EC4040; --dna-5: #F97316; --dna-6: #FCC822;
+    --dna-gradient: linear-gradient(90deg, var(--dna-1) 0%, var(--dna-2) 16%, var(--dna-3) 36%, var(--dna-4) 55%, var(--dna-5) 78%, var(--dna-6) 100%);
+    --font-display: "Source Serif 4", Georgia, serif;
+    --font-body:    "Source Sans 3", -apple-system, "Segoe UI", sans-serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+    margin: 0; -webkit-font-smoothing: antialiased;
+  }
+
+  .shell {
+    display: grid; grid-template-columns: 220px minmax(0, 1fr);
+    gap: 64px; max-width: 1140px; margin: 0 auto;
+    padding: 40px 48px 140px 48px;
+  }
+  @media (max-width: 900px) { .shell { grid-template-columns: 1fr; gap: 24px; padding: 24px; } }
+
+  .sidebar { position: sticky; top: 32px; align-self: start; }
+  .sb-label {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gray); margin-bottom: 14px;
+  }
+  .sb-list { list-style: none; margin: 0; padding: 0; }
+  .sb-list li.part-mark {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--gray); padding: 14px 0 6px 10px;
+    border-top: 1px solid var(--hairline); margin-top: 6px;
+  }
+  .sb-list li.part-mark:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+  .sb-list a {
+    display: block; font-size: 14px; color: var(--gray);
+    text-decoration: none; padding: 5px 0 5px 10px;
+    border-left: 2px solid transparent;
+    transition: color 220ms ease, border-left-color 220ms ease;
+  }
+  .sb-list a:hover { color: var(--ink); }
+  .sb-list a.active { font-weight: 500; }
+  .sb-count { font-family: var(--font-mono); color: inherit; opacity: 0.7; font-size: 11px; margin-right: 6px; }
+
+  .main { max-width: 680px; }
+
+  .header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--ink); padding-bottom: 14px; margin-bottom: 56px;
+  }
+  .mark { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.025em; }
+  .mark .dot { color: var(--magenta); }
+  .mark .it { font-style: italic; }
+  .meta {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    letter-spacing: 0.08em; text-transform: uppercase; display: flex; gap: 18px;
+  }
+  .meta a { color: var(--gray); text-decoration: none; }
+  .meta a:hover { color: var(--ink); }
+
+  /* hero with logo */
+  .hero-row {
+    display: flex; align-items: center; gap: 26px; margin-bottom: 16px;
+  }
+  /* Parametric 3D DNA helix — SVG renders, JS animates */
+  .dna-helix {
+    width: 88px;
+    height: auto;
+    display: block;
+    flex-shrink: 0;
+    overflow: visible;
+  }
+  .dna-helix line { stroke-linecap: round; }
+  /* DNA-gradient text — without italic (for inline emphasis) */
+  .rainbow {
+    background: var(--dna-gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    font-weight: 500;
+  }
+  .title {
+    font-family: var(--font-display); font-size: 56px; line-height: 1.05;
+    letter-spacing: -0.03em; font-weight: 400; margin: 0; max-width: 16ch;
+  }
+  .title .moment {
+    background: var(--dna-gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; font-style: italic;
+  }
+  .deck {
+    font-size: 18px; line-height: 1.55; color: var(--gray);
+    max-width: 56ch; margin: 0 0 56px 0;
+  }
+  .deck strong { color: var(--ink); font-weight: 500; }
+
+  .section { margin-top: 56px; scroll-margin-top: 32px; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px;
+    display: flex; gap: 10px; align-items: baseline;
+  }
+  .eyebrow .num { color: var(--magenta); }
+  .section h2 {
+    font-family: var(--font-display); font-size: 36px; letter-spacing: -0.025em;
+    line-height: 1.1; font-weight: 400; margin: 0 0 18px 0;
+  }
+  .section p { font-size: 17px; line-height: 1.6; margin: 0 0 14px 0; }
+  .section p em { font-family: var(--font-display); font-style: italic; }
+  .fn { font-family: var(--font-mono); font-size: 0.72em; vertical-align: super; color: var(--magenta); text-decoration: none; margin-left: 1px; }
+
+  .detail {
+    background: var(--paper-2); border-radius: 4px; padding: 14px 18px; margin: 18px 0 24px 0;
+  }
+  .detail summary {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+    list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  .detail summary::-webkit-details-marker { display: none; }
+  .detail summary::before { content: "▸"; color: var(--gray); transition: transform 180ms; }
+  .detail[open] summary::before { transform: rotate(90deg); }
+  .detail .body { margin-top: 12px; font-size: 14px; line-height: 1.55; }
+  .detail .body p { font-size: 14px; line-height: 1.55; margin: 0 0 8px 0; }
+
+  /* ===== Strengths & Weaknesses — interactive grid ===== */
+  .sw-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    margin-top: 22px;
+  }
+  @media (max-width: 720px) { .sw-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+  .sw-col { position: relative; }
+  .sw-col-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 8px; padding-bottom: 12px;
+    border-bottom: 2px solid;
+  }
+  .sw-col.strengths .sw-col-head { border-bottom-color: var(--ink); }
+  .sw-col.weaknesses .sw-col-head { border-bottom-color: var(--alert); }
+  .sw-col-title {
+    font-family: var(--font-display); font-size: 22px;
+    letter-spacing: -0.015em; font-weight: 500;
+  }
+  .sw-col.strengths .sw-col-title {
+    background: var(--dna-gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .sw-col.weaknesses .sw-col-title { color: var(--alert); }
+  .sw-col-count {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray);
+  }
+
+  .sw-list { list-style: none; margin: 0; padding: 0; }
+  .sw-item {
+    position: relative;
+    display: grid; grid-template-columns: 40px 1fr; gap: 12px;
+    padding: 14px 14px 14px 14px; margin: 2px 0;
+    border-radius: 4px; cursor: pointer; outline: none;
+    transition: background 240ms cubic-bezier(0.2, 0, 0, 1),
+                transform 240ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .sw-item::before {
+    content: ""; position: absolute;
+    left: 2px; top: 14px; bottom: 14px; width: 2px;
+    border-radius: 2px; background: var(--hairline);
+    transition: background 240ms ease, transform 280ms cubic-bezier(0.2, 0, 0, 1);
+    transform-origin: center;
+  }
+  .sw-item:hover,
+  .sw-item:focus-visible,
+  .sw-item.is-pinned { background: var(--paper-2); }
+  .sw-item:hover::before,
+  .sw-item:focus-visible::before,
+  .sw-item.is-pinned::before { transform: scaleY(1.08); }
+
+  .sw-col.strengths .sw-item:hover::before,
+  .sw-col.strengths .sw-item:focus-visible::before,
+  .sw-col.strengths .sw-item.is-pinned::before { background: var(--dna-gradient); }
+  .sw-col.weaknesses .sw-item:hover::before,
+  .sw-col.weaknesses .sw-item:focus-visible::before,
+  .sw-col.weaknesses .sw-item.is-pinned::before { background: var(--alert); }
+
+  .sw-item.is-pinned { box-shadow: inset 0 0 0 1px var(--hairline); }
+
+  .sw-num {
+    font-family: var(--font-display);
+    font-size: 28px; line-height: 1; letter-spacing: -0.025em;
+    font-weight: 400; font-variant-numeric: tabular-nums;
+    padding-top: 1px;
+    transition: transform 240ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .sw-col.strengths .sw-num {
+    background: var(--dna-gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .sw-col.weaknesses .sw-num { color: var(--alert); }
+  .sw-item:hover .sw-num,
+  .sw-item:focus-visible .sw-num,
+  .sw-item.is-pinned .sw-num { transform: translateX(2px); }
+
+  .sw-body { min-width: 0; padding-top: 2px; }
+  .sw-title {
+    font-family: var(--font-display); font-size: 16px;
+    font-weight: 500; line-height: 1.25;
+    letter-spacing: -0.005em; color: var(--ink);
+    margin: 0 0 5px 0;
+  }
+  .sw-desc {
+    font-size: 13.5px; line-height: 1.5; color: var(--gray);
+    margin: 0;
+  }
+  .sw-desc .metric {
+    font-family: var(--font-mono); font-size: 12.5px;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+    padding: 1px 5px; border-radius: 3px;
+    background: var(--paper-3);
+  }
+  .sw-col.weaknesses .sw-desc .metric { color: var(--alert); }
+
+  @media (max-width: 480px) {
+    .sw-item { grid-template-columns: 32px 1fr; padding: 12px 10px; }
+    .sw-num { font-size: 22px; }
+  }
+
+  .part-divider {
+    border-top: 1px solid var(--ink); margin: 72px 0 0 0; padding-top: 14px;
+  }
+  .part-divider .eyebrow {
+    font-family: var(--font-mono); font-size: 12px; color: var(--ink);
+    letter-spacing: 0.15em; text-transform: uppercase; margin: 0;
+  }
+  .part-divider .eyebrow .magenta { color: var(--magenta); }
+  .part-divider .deck-2 {
+    font-family: var(--font-display); font-size: 22px; line-height: 1.3;
+    color: var(--gray); margin: 8px 0 0 0; font-weight: 400; font-style: italic;
+  }
+
+  .sub { margin-top: 36px; }
+  .sub h3 {
+    font-family: var(--font-display); font-size: 22px; letter-spacing: -0.015em;
+    font-weight: 400; margin: 0 0 10px 0;
+  }
+  .sub .lead {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .sub .lead .magenta { color: var(--magenta); }
+
+  .chart {
+    border: 1px solid var(--hairline); border-radius: 4px;
+    padding: 18px 18px 14px 18px; margin: 14px 0 14px 0; background: var(--paper);
+  }
+  .chart .cap {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    letter-spacing: 0.05em; margin-top: 10px; border-top: 1px solid var(--hairline); padding-top: 8px;
+  }
+  .chart .cap .num { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .readout {
+    display: flex; gap: 28px; align-items: baseline; margin: 10px 0 16px 0; flex-wrap: wrap;
+  }
+  .readout .big {
+    font-family: var(--font-display); font-size: 56px; line-height: 1;
+    letter-spacing: -0.02em; font-weight: 400;
+    background: var(--dna-gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .readout .big-ink { color: var(--ink); -webkit-text-fill-color: var(--ink); background: none; }
+  .readout .lbl {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border-left: 1px solid var(--hairline); padding-left: 14px;
+    max-width: 200px;
+  }
+
+  .prop {
+    border-top: 1px solid var(--hairline); padding: 18px 0 4px 0;
+    display: grid; grid-template-columns: 40px 1fr 120px; gap: 16px;
+  }
+  .prop:last-child { border-bottom: 1px solid var(--hairline); }
+  .prop-rank {
+    font-family: var(--font-display); font-size: 32px; line-height: 1;
+    color: var(--magenta); letter-spacing: -0.02em;
+  }
+  .prop-body h4 {
+    font-family: var(--font-display); font-size: 18px; font-weight: 500;
+    margin: 0 0 6px 0; letter-spacing: -0.01em;
+  }
+  .prop-body p { font-size: 14px; line-height: 1.5; color: var(--gray); margin: 0; }
+  .prop-meta {
+    font-family: var(--font-mono); font-size: 10px; color: var(--gray);
+    letter-spacing: 0.08em; text-transform: uppercase; text-align: right;
+    padding-top: 6px;
+  }
+  .prop-meta span { display: block; }
+  .prop-meta .delta { color: var(--magenta); font-size: 13px; letter-spacing: 0; text-transform: none; font-family: var(--font-display); }
+
+  .correction {
+    border-top: 1px solid var(--ink); padding-top: 18px; margin: 56px 0 0 0;
+  }
+  .correction .eyebrow { margin-bottom: 10px; }
+  .correction p {
+    font-family: var(--font-display); font-style: italic; font-size: 24px;
+    line-height: 1.35; letter-spacing: -0.015em; color: var(--ink); margin: 0;
+  }
+
+  .refs { margin-top: 56px; border-top: 1px solid var(--ink); padding-top: 18px; }
+  .refs ol { margin: 0; padding-left: 24px; }
+  .refs li { font-size: 13px; line-height: 1.5; color: var(--gray); margin-bottom: 8px; }
+  .refs li em { font-family: var(--font-display); font-style: italic; color: var(--ink); }
+  .refs li a {
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--gray-2); text-underline-offset: 3px;
+    transition: text-decoration-color 180ms ease;
+  }
+  .refs li a:hover { text-decoration-color: var(--magenta); }
+  .refs li .doi {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray-2);
+    margin-left: 4px;
+  }
+
+  .footnotes {
+    margin-top: 24px; font-size: 13px; color: var(--gray); line-height: 1.5;
+    border-top: 1px solid var(--hairline); padding-top: 12px;
+  }
+  .footnotes p { font-size: 13px; line-height: 1.5; margin: 0 0 4px 0; }
+  .footnotes .fn-mark {
+    color: var(--magenta); font-family: var(--font-mono);
+    margin-right: 6px; font-size: 11px; font-weight: 500;
+  }
+  .footnotes em { font-family: var(--font-display); font-style: italic; color: var(--ink); }
+
+  .watermark {
+    position: fixed; bottom: 18px; right: 24px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    letter-spacing: 0.1em; text-transform: lowercase; pointer-events: none;
+  }
+  .watermark .dot { color: var(--magenta); }
+
+  .svg-chart text { font-family: var(--font-mono); font-size: 10px; fill: var(--gray); }
+  .svg-chart .axis-line { stroke: var(--hairline); stroke-width: 1; }
+  .svg-chart .data-line { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+  .svg-chart .data-line.accent { stroke: var(--magenta); stroke-width: 2; }
+  .svg-chart .data-dot { fill: var(--ink); }
+  .svg-chart .data-dot.accent { fill: var(--magenta); }
+  .svg-chart .bar { fill: var(--ink); }
+  .svg-chart .bar.accent { fill: var(--magenta); }
+  .svg-chart .bar.muted { fill: var(--gray-2); }
+  .svg-chart .label-strong { fill: var(--ink); font-weight: 500; }
+  .svg-chart .peak-marker { stroke: var(--magenta); stroke-width: 1; stroke-dasharray: 2 3; }
+
+  /* ===== method cards ===== */
+  .m-intro {
+    font-size: 17px; line-height: 1.6; color: var(--gray);
+    margin: 0 0 24px 0; max-width: 60ch;
+  }
+  .m-intro strong { color: var(--ink); font-weight: 500; }
+
+  .method-cards {
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 0 0 20px 0;
+  }
+  .m-card {
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    background: var(--paper);
+    cursor: pointer;
+    transition: background 220ms var(--ease-out, ease),
+                border-color 220ms var(--ease-out, ease);
+    overflow: hidden;
+  }
+  .m-card:hover { border-color: var(--ink); }
+  .m-card:focus { outline: none; border-color: var(--ink); }
+  .m-card.is-open {
+    background: var(--paper-2);
+    border-color: var(--ink);
+  }
+
+  .m-head {
+    display: grid;
+    grid-template-columns: 48px 1fr 36px;
+    gap: 14px;
+    align-items: start;
+    padding: 16px 18px;
+  }
+  .m-num {
+    font-family: var(--font-display);
+    font-size: 32px; line-height: 1;
+    color: var(--magenta);
+    letter-spacing: -0.02em;
+    padding-top: 2px;
+  }
+  .m-card.is-open .m-num {
+    background: var(--dna-gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .m-title-wrap { padding-top: 4px; min-width: 0; }
+  .m-title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    line-height: 1.22;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .m-tease {
+    font-size: 14px;
+    color: var(--gray);
+    line-height: 1.45;
+    transition: opacity 220ms ease, max-height 220ms ease;
+    max-height: 80px;
+    overflow: hidden;
+  }
+  .m-card.is-open .m-tease {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: -6px;
+  }
+  .m-toggle {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    color: var(--gray);
+    text-align: center;
+    padding-top: 0;
+    line-height: 1;
+    transition: transform 280ms var(--ease-out, ease), color 220ms ease;
+    user-select: none;
+  }
+  .m-card.is-open .m-toggle {
+    transform: rotate(45deg);
+    color: var(--magenta);
+  }
+
+  .m-body {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 18px 0 80px;
+    transition: max-height 360ms var(--ease-out, ease),
+                padding 320ms var(--ease-out, ease);
+  }
+  .m-card.is-open .m-body {
+    max-height: 800px;
+    padding: 4px 18px 18px 80px;
+  }
+  .m-body p {
+    font-size: 14.5px !important;
+    line-height: 1.6 !important;
+    color: var(--ink) !important;
+    margin: 0 0 10px 0 !important;
+    max-width: none !important;
+  }
+  .m-body p em {
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+  .m-viz {
+    margin-top: 12px;
+    border-top: 1px solid var(--hairline);
+    padding-top: 12px;
+  }
+  .m-viz svg { width: 100%; height: auto; display: block; }
+
+  /* data card — distinct from method-cards */
+  .m-data-card {
+    background: var(--paper-2);
+    border-left: 3px solid var(--magenta);
+    padding: 16px 20px;
+    margin-top: 20px;
+    border-radius: 0 4px 4px 0;
+  }
+  .m-data-card .eyebrow {
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .m-data-card .m-data-mark {
+    color: var(--magenta);
+    font-family: var(--font-mono);
+    margin-right: 6px;
+    font-size: 13px;
+  }
+  .m-data-card p {
+    font-size: 14.5px !important;
+    line-height: 1.6 !important;
+    color: var(--ink) !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+  .m-data-card p em {
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    .m-head { grid-template-columns: 36px 1fr 28px; gap: 10px; padding: 14px 14px; }
+    .m-num { font-size: 26px; }
+    .m-title { font-size: 17px; }
+    .m-card.is-open .m-body { padding: 4px 14px 14px 60px; }
+    .m-body { padding: 0 14px 0 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<aside class="sidebar">
+  <div class="sb-label">Содержание</div>
+  <ul class="sb-list">
+    <li class="part-mark">Часть 1 · анализ</li>
+    <li><a href="#abstract"   data-dna="#4A90E2"><span class="sb-count">01</span>Введение</a></li>
+    <li><a href="#method"     data-dna="#8662D9"><span class="sb-count">02</span>Метод</a></li>
+    <li><a href="#strength"   data-dna="#C551AA"><span class="sb-count">03</span>Сильные стороны</a></li>
+    <li><a href="#weakness"   data-dna="#EA476F"><span class="sb-count">04</span>Слабые стороны</a></li>
+    <li class="part-mark">Часть 2 · развитие</li>
+    <li><a href="#exp"        data-dna="#ED443C"><span class="sb-count">05</span>Что я измерил</a></li>
+    <li><a href="#proposal"   data-dna="#F56322"><span class="sb-count">06</span>Что предлагаю</a></li>
+    <li><a href="#correction" data-dna="#FA921A"><span class="sb-count">07</span>Одна поправка</a></li>
+    <li><a href="#refs"       data-dna="#E0A700"><span class="sb-count">08</span>Источники</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+<div class="header">
+  <div class="mark">eugene<span class="dot">.</span>research</div>
+  <div class="meta">
+    <a href="https://t.me/Ev5gen5" target="_blank" rel="noopener">e. korshunov</a>
+    <span>proposal</span>
+    <a href="#refs">code →</a>
+  </div>
+</div>
+
+<div class="hero-row">
+  <svg id="dna-helix" class="dna-helix" viewBox="-150 -260 300 520" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="dna-grad" x1="0" y1="-260" x2="0" y2="260" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#2EC5FF"/>
+        <stop offset="20%"  stop-color="#8A4FFF"/>
+        <stop offset="40%"  stop-color="#E64BC8"/>
+        <stop offset="60%"  stop-color="#F0455A"/>
+        <stop offset="80%"  stop-color="#FF8A2B"/>
+        <stop offset="100%" stop-color="#FFC93C"/>
+      </linearGradient>
+    </defs>
+    <g id="dna-render"></g>
+  </svg>
+  <h1 class="title">GENA-LM —<br><span class="moment">анализ и развитие</span>.</h1>
+</div>
+
+<p class="deck">
+  GENA-LM — открытое семейство ДНК-моделей от AIRI, опубликованное в
+  Nucleic&nbsp;Acids&nbsp;Research<a href="#fn1" class="fn">1</a> в 2025 году.
+</p>
+
+<section class="section" id="abstract">
+  <div class="eyebrow"><span class="num">01</span> · введение</div>
+  <h2>О чём вообще статья</h2>
+  <p>
+    Чтобы понять, как работает ген, иногда нужно посмотреть на сотни тысяч букв вокруг
+    него. Но существующие ДНК-модели видят немного: DNABERT — 512 нуклеотидов, Nucleotide
+    Transformer — 12 000. Энхансер, регулирующий ген с расстояния 100 000 букв, в такое
+    окно просто не попадает.
+  </p>
+  <p>
+    <span class="rainbow">GENA-LM</span> меняет масштаб. Семейство языковых моделей для ДНК, которое работает с
+    участками <em>до 36 000 нуклеотидов сразу</em> — и до миллионов через рекуррентную
+    память. Это <em>BERT для генома</em>, в котором длинный контекст не «довесок», а
+    главная инженерная идея.
+  </p>
+</section>
+
+<section class="section" id="method">
+  <div class="eyebrow"><span class="num">02</span> · метод</div>
+  <h2>Как устроен GENA-LM</h2>
+  <p class="m-intro">
+    Главная техническая идея статьи — не одно изобретение, а пайплайн из четырёх готовых
+    кирпичей, который впервые работает для длинных ДНК-последовательностей. Каждый
+    компонент по отдельности уже был известен. <span class="rainbow">Новое</span> — в их комбинации.
+  </p>
+
+  <div class="method-cards">
+
+    <!-- card 1 — BPE -->
+    <div class="m-card" tabindex="0">
+      <div class="m-head">
+        <div class="m-num">1</div>
+        <div class="m-title-wrap">
+          <div class="m-title">BPE-токенизация вместо k-mers</div>
+          <div class="m-tease">Переменная длина токенов вместо фиксированных окон. В то же окно влезает в 8–10 раз больше ДНК.</div>
+        </div>
+        <div class="m-toggle" aria-hidden="true">+</div>
+      </div>
+      <div class="m-body">
+        <p>
+          Большинство ДНК-моделей режут последовательность на <em>k-mers</em> — окна
+          фиксированной длины 3–6 нуклеотидов. GENA-LM использует <em>Byte-Pair Encoding</em>
+          из NLP: словарь на 32 000 «слов» переменной длины, медиана — 9 нуклеотидов,
+          максимум — 64.
+        </p>
+        <p>
+          Это даёт два эффекта. Первое: в стандартное окно модели на 512 токенов влезает
+          не 512 букв, а примерно <em>4 500 нуклеотидов</em> — в 8–10 раз больше ДНК при
+          тех же затратах на вычисление. Второе: длинные токены сами начинают совпадать с
+          повторяющимися фрагментами ДНК — как длинными вставками, так и короткими
+          повторами подряд. Модель буквально учит «словарь генома».
+        </p>
+
+        <!-- mini-viz: ONE source DNA strand on top, two tokenization tracks below -->
+        <div class="m-viz">
+          <svg viewBox="0 0 580 160" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- ───── ROW 1 · Source DNA (24 nt) ───── -->
+            <text x="0" y="22" font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" letter-spacing="0.05em">исходная ДНК · 24 нт</text>
+            <g font-family="JetBrains Mono, monospace" font-size="13" fill="#1A1A1A">
+              <text x="186" y="22" text-anchor="middle">A</text>
+              <text x="198" y="22" text-anchor="middle">T</text>
+              <text x="210" y="22" text-anchor="middle">G</text>
+              <text x="222" y="22" text-anchor="middle">C</text>
+              <text x="234" y="22" text-anchor="middle">A</text>
+              <text x="246" y="22" text-anchor="middle">T</text>
+              <text x="258" y="22" text-anchor="middle">G</text>
+              <text x="270" y="22" text-anchor="middle">C</text>
+              <text x="282" y="22" text-anchor="middle">A</text>
+              <text x="294" y="22" text-anchor="middle">T</text>
+              <text x="306" y="22" text-anchor="middle">G</text>
+              <text x="318" y="22" text-anchor="middle">C</text>
+              <text x="330" y="22" text-anchor="middle">A</text>
+              <text x="342" y="22" text-anchor="middle">A</text>
+              <text x="354" y="22" text-anchor="middle">T</text>
+              <text x="366" y="22" text-anchor="middle">G</text>
+              <text x="378" y="22" text-anchor="middle">C</text>
+              <text x="390" y="22" text-anchor="middle">A</text>
+              <text x="402" y="22" text-anchor="middle">T</text>
+              <text x="414" y="22" text-anchor="middle">G</text>
+              <text x="426" y="22" text-anchor="middle">C</text>
+              <text x="438" y="22" text-anchor="middle">A</text>
+              <text x="450" y="22" text-anchor="middle">T</text>
+              <text x="462" y="22" text-anchor="middle">G</text>
+            </g>
+            <!-- ruler under source -->
+            <line x1="180" y1="30" x2="468" y2="30" stroke="#D9D4C8" stroke-width="1"/>
+
+            <!-- ───── ROW 2 · k-mers (3-nt, overlapping, step 1) — staircase ───── -->
+            <text x="0" y="52" font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" letter-spacing="0.05em">k-mers · 3-нт, внахлёст</text>
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#1A1A1A">
+              <!-- each k-mer starts at x = 180 + i*12, width = 36 -->
+              <rect x="180" y="42" width="36" height="14" fill="none" stroke="#9A958E"/>
+              <text x="198" y="52" text-anchor="middle">ATG</text>
+
+              <rect x="192" y="58" width="36" height="14" fill="none" stroke="#9A958E"/>
+              <text x="210" y="68" text-anchor="middle">TGC</text>
+
+              <rect x="204" y="74" width="36" height="14" fill="none" stroke="#9A958E"/>
+              <text x="222" y="84" text-anchor="middle">GCA</text>
+
+              <rect x="216" y="90" width="36" height="14" fill="none" stroke="#9A958E"/>
+              <text x="234" y="100" text-anchor="middle">CAT</text>
+            </g>
+            <text x="262" y="100" font-family="JetBrains Mono, monospace" font-size="10" font-style="italic" fill="#9A958E">… ещё 18</text>
+            <text x="400" y="100" font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A" font-weight="600">22 токена</text>
+
+            <!-- divider -->
+            <line x1="180" y1="114" x2="468" y2="114" stroke="#D9D4C8" stroke-width="1"/>
+
+            <!-- ───── ROW 3 · BPE (variable length, no overlap) ───── -->
+            <text x="0" y="135" font-family="JetBrains Mono, monospace" font-size="10" fill="#E94B8B" letter-spacing="0.05em">BPE · переменная длина</text>
+            <g font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A">
+              <rect x="180" y="122" width="60" height="20" fill="none" stroke="#E94B8B" stroke-width="1.5"/>
+              <text x="210" y="135" text-anchor="middle">ATGCA</text>
+
+              <rect x="240" y="122" width="60" height="20" fill="none" stroke="#E94B8B" stroke-width="1.5"/>
+              <text x="270" y="135" text-anchor="middle">TGCAT</text>
+
+              <rect x="300" y="122" width="72" height="20" fill="none" stroke="#E94B8B" stroke-width="1.5"/>
+              <text x="336" y="135" text-anchor="middle">GCAATG</text>
+
+              <rect x="372" y="122" width="96" height="20" fill="none" stroke="#E94B8B" stroke-width="1.5"/>
+              <text x="420" y="135" text-anchor="middle">CATGCATG</text>
+            </g>
+            <text x="478" y="135" font-family="JetBrains Mono, monospace" font-size="11" fill="#E94B8B" font-weight="600">4 токена</text>
+
+            <!-- caption -->
+            <text x="0" y="156" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">один и тот же фрагмент ДНК · BPE упаковывает его в 5–6× плотнее</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- card 2 — BERT + MLM -->
+    <div class="m-card" tabindex="0">
+      <div class="m-head">
+        <div class="m-num">2</div>
+        <div class="m-title-wrap">
+          <div class="m-title">BERT-архитектура с masked language modeling</div>
+          <div class="m-tease">15% токенов прячутся — модель угадывает их по соседям. Никакой биологической разметки, только сама ДНК.</div>
+        </div>
+        <div class="m-toggle" aria-hidden="true">+</div>
+      </div>
+      <div class="m-body">
+        <p>
+          Модель учится точно так же, как BERT учится на тексте: в случайных местах
+          прячут 15% токенов, и модель должна угадать их по соседям. Никакой биологической
+          разметки — только сама последовательность ДНК.
+        </p>
+        <p>
+          В семействе есть две версии: <em>base</em> (110 млн параметров) и <em>large</em>
+          (336 млн). Плюс варианты с BigBird и RMT — всего <em>8 предобученных моделей</em>,
+          выложенных в открытый доступ.
+        </p>
+
+        <!-- mini-viz: MLM with concrete top-3 predictions -->
+        <div class="m-viz">
+          <svg viewBox="0 0 580 170" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- ───── INPUT row: 5 tokens with [MASK] in the middle ───── -->
+            <text x="0" y="20" font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" letter-spacing="0.05em">вход · 5 токенов с маской</text>
+            <g font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A">
+              <rect x="120" y="10" width="60" height="22" fill="#F0EDE4" stroke="#D9D4C8"/>
+              <text x="150" y="25" text-anchor="middle">ATGCA</text>
+
+              <rect x="184" y="10" width="68" height="22" fill="#F0EDE4" stroke="#D9D4C8"/>
+              <text x="218" y="25" text-anchor="middle">TGCATG</text>
+
+              <rect x="256" y="10" width="68" height="22" fill="#fff" stroke="#E94B8B" stroke-width="1.5"/>
+              <text x="290" y="25" text-anchor="middle" fill="#E94B8B" font-weight="600">[MASK]</text>
+
+              <rect x="328" y="10" width="60" height="22" fill="#F0EDE4" stroke="#D9D4C8"/>
+              <text x="358" y="25" text-anchor="middle">CAATG</text>
+
+              <rect x="392" y="10" width="88" height="22" fill="#F0EDE4" stroke="#D9D4C8"/>
+              <text x="436" y="25" text-anchor="middle">CATGCATG</text>
+            </g>
+
+            <!-- ───── ARROW down from MASK center (x=290) ───── -->
+            <path d="M 290 38 L 290 62" stroke="#9A958E" stroke-width="1.5"/>
+            <path d="M 286 58 L 290 62 L 294 58" stroke="#9A958E" stroke-width="1.5" fill="none"/>
+
+            <!-- ───── PREDICTIONS label ───── -->
+            <text x="100" y="80" font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" letter-spacing="0.05em">предсказание модели · top-3 из 32 000 токенов словаря</text>
+
+            <!-- ───── TOP-1 (winner, magenta accent) ───── -->
+            <rect x="180" y="88" width="100" height="22" fill="#fff" stroke="#E94B8B" stroke-width="1.5"/>
+            <text x="230" y="103" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A" font-weight="600">GCAATG</text>
+            <!-- probability bar -->
+            <rect x="290" y="93" width="120" height="12" fill="#F0EDE4"/>
+            <rect x="290" y="93" width="104" height="12" fill="#E94B8B"/>
+            <text x="420" y="103" font-family="JetBrains Mono, monospace" font-size="11" fill="#E94B8B" font-weight="600">87%</text>
+
+            <!-- ───── TOP-2 ───── -->
+            <rect x="180" y="118" width="100" height="20" fill="none" stroke="#D9D4C8"/>
+            <text x="230" y="132" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6E6963">ATGCAA</text>
+            <rect x="290" y="123" width="120" height="10" fill="#F0EDE4"/>
+            <rect x="290" y="123" width="8" height="10" fill="#9A958E"/>
+            <text x="420" y="132" font-family="JetBrains Mono, monospace" font-size="11" fill="#9A958E">6%</text>
+
+            <!-- ───── TOP-3 ───── -->
+            <rect x="180" y="144" width="100" height="20" fill="none" stroke="#D9D4C8"/>
+            <text x="230" y="158" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6E6963">CCAATG</text>
+            <rect x="290" y="149" width="120" height="10" fill="#F0EDE4"/>
+            <rect x="290" y="149" width="5" height="10" fill="#9A958E"/>
+            <text x="420" y="158" font-family="JetBrains Mono, monospace" font-size="11" fill="#9A958E">4%</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- card 3 — Sparse attention -->
+    <div class="m-card" tabindex="0">
+      <div class="m-head">
+        <div class="m-num">3</div>
+        <div class="m-title-wrap">
+          <div class="m-title">Sparse attention для длинного контекста</div>
+          <div class="m-tease">Локальные + случайные + глобальные соседи. Длина входа вырастает с 4.5 до 36 кб — в 10 раз больше DNABERT.</div>
+        </div>
+        <div class="m-toggle" aria-hidden="true">+</div>
+      </div>
+      <div class="m-body">
+        <p>
+          Обычный self-attention квадратичен по длине: удвоить вход — учетверить
+          вычисления. Именно поэтому DNABERT застрял на 512 нуклеотидах — длиннее
+          становится просто слишком дорого. <em>Sparse attention</em> из BigBird обходит
+          это хитро: каждый токен смотрит не на всех соседей, а только на три типа связей.
+          Соседей в локальном окне, пару случайных дальних токенов и несколько глобальных
+          точек, к которым подключены все остальные.
+        </p>
+        <p>
+          Этого набора хватает, чтобы ловить дальние зависимости, а число связей растёт
+          почти линейно, а не квадратично. Максимальная длина входа вырастает с 4.5 кб до
+          <em>36 000 нуклеотидов</em> — это 4 096 токенов GENA-LM.
+        </p>
+
+        <!-- mini-viz: TWO 8x8 attention matrices · numbered axes · ✓ cells -->
+        <div class="m-viz">
+          <svg viewBox="0 0 580 305" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- ───── TOP EXPLANATION (2 lines, centered) ───── -->
+            <text x="290" y="11" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">каждая клетка: может ли токен «строки» смотреть на токен «столбца»?</text>
+            <text x="290" y="24" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">✓ — да · пусто — нет</text>
+
+            <!-- ═════════ MATRIX 1 · Full attention (LEFT, x=60-220) ═════════ -->
+
+            <!-- Header -->
+            <text x="140" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A" font-weight="600">Full attention · обычный</text>
+
+            <!-- Top axis labels (col 1-8) -->
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" text-anchor="middle">
+              <text x="70"  y="62">1</text>
+              <text x="90"  y="62">2</text>
+              <text x="110" y="62">3</text>
+              <text x="130" y="62">4</text>
+              <text x="150" y="62">5</text>
+              <text x="170" y="62">6</text>
+              <text x="190" y="62">7</text>
+              <text x="210" y="62">8</text>
+            </g>
+
+            <!-- Left axis labels (row 1-8) -->
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" text-anchor="middle">
+              <text x="52" y="82">1</text>
+              <text x="52" y="102">2</text>
+              <text x="52" y="122">3</text>
+              <text x="52" y="142">4</text>
+              <text x="52" y="162">5</text>
+              <text x="52" y="182">6</text>
+              <text x="52" y="202">7</text>
+              <text x="52" y="222">8</text>
+            </g>
+
+            <!-- Grid lines (matrix 1) -->
+            <g stroke="#D9D4C8" stroke-width="0.6" fill="none">
+              <line x1="60"  y1="68" x2="60"  y2="228"/>
+              <line x1="80"  y1="68" x2="80"  y2="228"/>
+              <line x1="100" y1="68" x2="100" y2="228"/>
+              <line x1="120" y1="68" x2="120" y2="228"/>
+              <line x1="140" y1="68" x2="140" y2="228"/>
+              <line x1="160" y1="68" x2="160" y2="228"/>
+              <line x1="180" y1="68" x2="180" y2="228"/>
+              <line x1="200" y1="68" x2="200" y2="228"/>
+              <line x1="220" y1="68" x2="220" y2="228"/>
+              <line x1="60" y1="68"  x2="220" y2="68"/>
+              <line x1="60" y1="88"  x2="220" y2="88"/>
+              <line x1="60" y1="108" x2="220" y2="108"/>
+              <line x1="60" y1="128" x2="220" y2="128"/>
+              <line x1="60" y1="148" x2="220" y2="148"/>
+              <line x1="60" y1="168" x2="220" y2="168"/>
+              <line x1="60" y1="188" x2="220" y2="188"/>
+              <line x1="60" y1="208" x2="220" y2="208"/>
+              <line x1="60" y1="228" x2="220" y2="228"/>
+            </g>
+
+            <!-- All 64 cells filled with ink ✓ -->
+            <g font-family="JetBrains Mono, monospace" font-size="13" fill="#1A1A1A" font-weight="700" text-anchor="middle" dominant-baseline="central">
+              <text x="70"  y="78">✓</text><text x="90"  y="78">✓</text><text x="110" y="78">✓</text><text x="130" y="78">✓</text><text x="150" y="78">✓</text><text x="170" y="78">✓</text><text x="190" y="78">✓</text><text x="210" y="78">✓</text>
+              <text x="70"  y="98">✓</text><text x="90"  y="98">✓</text><text x="110" y="98">✓</text><text x="130" y="98">✓</text><text x="150" y="98">✓</text><text x="170" y="98">✓</text><text x="190" y="98">✓</text><text x="210" y="98">✓</text>
+              <text x="70"  y="118">✓</text><text x="90"  y="118">✓</text><text x="110" y="118">✓</text><text x="130" y="118">✓</text><text x="150" y="118">✓</text><text x="170" y="118">✓</text><text x="190" y="118">✓</text><text x="210" y="118">✓</text>
+              <text x="70"  y="138">✓</text><text x="90"  y="138">✓</text><text x="110" y="138">✓</text><text x="130" y="138">✓</text><text x="150" y="138">✓</text><text x="170" y="138">✓</text><text x="190" y="138">✓</text><text x="210" y="138">✓</text>
+              <text x="70"  y="158">✓</text><text x="90"  y="158">✓</text><text x="110" y="158">✓</text><text x="130" y="158">✓</text><text x="150" y="158">✓</text><text x="170" y="158">✓</text><text x="190" y="158">✓</text><text x="210" y="158">✓</text>
+              <text x="70"  y="178">✓</text><text x="90"  y="178">✓</text><text x="110" y="178">✓</text><text x="130" y="178">✓</text><text x="150" y="178">✓</text><text x="170" y="178">✓</text><text x="190" y="178">✓</text><text x="210" y="178">✓</text>
+              <text x="70"  y="198">✓</text><text x="90"  y="198">✓</text><text x="110" y="198">✓</text><text x="130" y="198">✓</text><text x="150" y="198">✓</text><text x="170" y="198">✓</text><text x="190" y="198">✓</text><text x="210" y="198">✓</text>
+              <text x="70"  y="218">✓</text><text x="90"  y="218">✓</text><text x="110" y="218">✓</text><text x="130" y="218">✓</text><text x="150" y="218">✓</text><text x="170" y="218">✓</text><text x="190" y="218">✓</text><text x="210" y="218">✓</text>
+            </g>
+
+            <!-- Caption below matrix 1 -->
+            <text x="140" y="248" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A" font-weight="600">N² = 64 связи</text>
+            <text x="140" y="262" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">тяжело при N &gt; 512</text>
+
+            <!-- ───── ARROW between matrices ───── -->
+            <g stroke="#9A958E" stroke-width="1.5" fill="none">
+              <path d="M 240 148 L 280 148"/>
+              <path d="M 275 143 L 280 148 L 275 153"/>
+            </g>
+
+            <!-- ═════════ MATRIX 2 · Sparse attention (RIGHT, x=300-460) ═════════ -->
+
+            <!-- Header -->
+            <text x="380" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#E94B8B" font-weight="600">Sparse attention · BigBird</text>
+
+            <!-- Top axis labels (col 1-8) -->
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" text-anchor="middle">
+              <text x="310" y="62">1</text>
+              <text x="330" y="62">2</text>
+              <text x="350" y="62">3</text>
+              <text x="370" y="62">4</text>
+              <text x="390" y="62">5</text>
+              <text x="410" y="62">6</text>
+              <text x="430" y="62">7</text>
+              <text x="450" y="62">8</text>
+            </g>
+
+            <!-- Left axis labels (row 1-8) -->
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" text-anchor="middle">
+              <text x="292" y="82">1</text>
+              <text x="292" y="102">2</text>
+              <text x="292" y="122">3</text>
+              <text x="292" y="142">4</text>
+              <text x="292" y="162">5</text>
+              <text x="292" y="182">6</text>
+              <text x="292" y="202">7</text>
+              <text x="292" y="222">8</text>
+            </g>
+
+            <!-- Grid lines (matrix 2) -->
+            <g stroke="#D9D4C8" stroke-width="0.6" fill="none">
+              <line x1="300" y1="68" x2="300" y2="228"/>
+              <line x1="320" y1="68" x2="320" y2="228"/>
+              <line x1="340" y1="68" x2="340" y2="228"/>
+              <line x1="360" y1="68" x2="360" y2="228"/>
+              <line x1="380" y1="68" x2="380" y2="228"/>
+              <line x1="400" y1="68" x2="400" y2="228"/>
+              <line x1="420" y1="68" x2="420" y2="228"/>
+              <line x1="440" y1="68" x2="440" y2="228"/>
+              <line x1="460" y1="68" x2="460" y2="228"/>
+              <line x1="300" y1="68"  x2="460" y2="68"/>
+              <line x1="300" y1="88"  x2="460" y2="88"/>
+              <line x1="300" y1="108" x2="460" y2="108"/>
+              <line x1="300" y1="128" x2="460" y2="128"/>
+              <line x1="300" y1="148" x2="460" y2="148"/>
+              <line x1="300" y1="168" x2="460" y2="168"/>
+              <line x1="300" y1="188" x2="460" y2="188"/>
+              <line x1="300" y1="208" x2="460" y2="208"/>
+              <line x1="300" y1="228" x2="460" y2="228"/>
+            </g>
+
+            <!-- Magenta ✓ · global (row 1 + col 1) -->
+            <g font-family="JetBrains Mono, monospace" font-size="13" fill="#E94B8B" font-weight="700" text-anchor="middle" dominant-baseline="central">
+              <text x="310" y="78">✓</text><text x="330" y="78">✓</text><text x="350" y="78">✓</text><text x="370" y="78">✓</text><text x="390" y="78">✓</text><text x="410" y="78">✓</text><text x="430" y="78">✓</text><text x="450" y="78">✓</text>
+              <text x="310" y="98">✓</text>
+              <text x="310" y="118">✓</text>
+              <text x="310" y="138">✓</text>
+              <text x="310" y="158">✓</text>
+              <text x="310" y="178">✓</text>
+              <text x="310" y="198">✓</text>
+              <text x="310" y="218">✓</text>
+            </g>
+
+            <!-- Ink ✓ · local sliding window (±1 from diagonal) -->
+            <g font-family="JetBrains Mono, monospace" font-size="13" fill="#1A1A1A" font-weight="700" text-anchor="middle" dominant-baseline="central">
+              <text x="330" y="98">✓</text><text x="350" y="98">✓</text>
+              <text x="330" y="118">✓</text><text x="350" y="118">✓</text><text x="370" y="118">✓</text>
+              <text x="350" y="138">✓</text><text x="370" y="138">✓</text><text x="390" y="138">✓</text>
+              <text x="370" y="158">✓</text><text x="390" y="158">✓</text><text x="410" y="158">✓</text>
+              <text x="390" y="178">✓</text><text x="410" y="178">✓</text><text x="430" y="178">✓</text>
+              <text x="410" y="198">✓</text><text x="430" y="198">✓</text><text x="450" y="198">✓</text>
+              <text x="430" y="218">✓</text><text x="450" y="218">✓</text>
+            </g>
+
+            <!-- Gray ✓ · random scattered -->
+            <g font-family="JetBrains Mono, monospace" font-size="13" fill="#9A958E" font-weight="700" text-anchor="middle" dominant-baseline="central">
+              <text x="410" y="98">✓</text>
+              <text x="450" y="138">✓</text>
+              <text x="330" y="158">✓</text>
+              <text x="350" y="198">✓</text>
+            </g>
+
+            <!-- Caption below matrix 2 -->
+            <text x="380" y="248" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#E94B8B" font-weight="600">≈ 3N связей</text>
+            <text x="380" y="262" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">работает до N = 4 096</text>
+
+            <!-- ═════════ LEGEND (right side, x=480) ═════════ -->
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963">
+              <text x="482" y="82" font-size="13" fill="#E94B8B" font-weight="700" text-anchor="middle">✓</text>
+              <text x="498" y="84">global · видны всем</text>
+
+              <text x="482" y="102" font-size="13" fill="#1A1A1A" font-weight="700" text-anchor="middle">✓</text>
+              <text x="498" y="104">local · соседи в окне</text>
+
+              <text x="482" y="122" font-size="13" fill="#9A958E" font-weight="700" text-anchor="middle">✓</text>
+              <text x="498" y="124">random · случайные</text>
+
+              <rect x="477" y="135" width="11" height="11" fill="#F4F1EA" stroke="#D9D4C8" stroke-width="0.8"/>
+              <text x="498" y="144">empty · связи нет</text>
+            </g>
+
+            <!-- ═════════ BOTTOM CAPTION (italic gray, 2 lines) ═════════ -->
+            <text x="20" y="288" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">sparse оставляет только важные связи: соседей, пару случайных партнёров и нескольких глобальных «якорей» —</text>
+            <text x="20" y="300" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">этого хватает, чтобы ловить дальние зависимости, и считается в разы быстрее.</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- card 4 — RMT -->
+    <div class="m-card" tabindex="0">
+      <div class="m-head">
+        <div class="m-num">4</div>
+        <div class="m-title-wrap">
+          <div class="m-title">Recurrent Memory Transformer для сверхдлинных участков</div>
+          <div class="m-tease">Длинную последовательность режут на куски. В начале каждого — 10 служебных токенов, которые запоминают прочитанное и передают следующему куску. В статье GENA-LM проверили до 50 кб, а у самой архитектуры RMT потолок — миллионы нуклеотидов<a href="#ref-2" class="fn">2</a>.</div>
+        </div>
+        <div class="m-toggle" aria-hidden="true">+</div>
+      </div>
+      <div class="m-body">
+        <p>
+          Когда даже 36 кб мало, в дело вступает <em>RMT</em>. Идея простая. Длинная
+          последовательность режется на сегменты по 4.5 кб. В начало каждого сегмента
+          вставляются
+          <em>10 специальных memory-токенов</em>. Модель обрабатывает сегмент целиком, и
+          эти memory-токены в процессе обновляются — впитывают в себя сжатое описание
+          того, что модель прочитала.
+        </p>
+        <p>
+          Дальше начинается рекурсия: обновлённые memory-токены из первого сегмента
+          становятся стартовыми для второго. Из второго — для третьего. Один и тот же
+          трансформер прокатывается по сегментам, как читатель проходит главу за главой и
+          держит в голове сюжет.
+        </p>
+        <p>
+          В самой статье GENA-LM этот механизм проверен на участках до <em>50 кб</em>
+          (12 сегментов). В продолжении той же группы — уже до миллионов пар нуклеотидов.
+        </p>
+
+        <!-- mini-viz: M-tokens INSIDE each segment, arrows from M→M arc over the top -->
+        <div class="m-viz">
+          <svg viewBox="0 0 580 210" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- ───── SEGMENT LABELS ───── -->
+            <text x="100" y="14" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" letter-spacing="0.05em">сегмент 1</text>
+            <text x="290" y="14" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" letter-spacing="0.05em">сегмент 2</text>
+            <text x="480" y="14" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#9A958E" letter-spacing="0.05em">сегмент 3</text>
+
+            <!-- ───── ARROW 1→2: arc from M-seg1 over content to M-seg2 ───── -->
+            <path d="M 37.5 50 C 37.5 22, 227.5 22, 227.5 50" stroke="#E94B8B" stroke-width="1.5" fill="none"/>
+            <path d="M 222 46 L 227.5 50 L 233 46" stroke="#E94B8B" stroke-width="1.5" fill="none"/>
+
+            <!-- ───── ARROW 2→3 ───── -->
+            <path d="M 227.5 50 C 227.5 22, 417.5 22, 417.5 50" stroke="#E94B8B" stroke-width="1.5" fill="none"/>
+            <path d="M 412 46 L 417.5 50 L 423 46" stroke="#E94B8B" stroke-width="1.5" fill="none"/>
+
+            <!-- ───── SEGMENT 1 (M-section + content side-by-side) ───── -->
+            <g>
+              <rect x="20" y="50" width="35" height="40" fill="#E94B8B"/>
+              <text x="37.5" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="#fff" font-weight="700">MMM</text>
+
+              <rect x="55" y="50" width="125" height="40" fill="#F0EDE4" stroke="#D9D4C8"/>
+              <text x="117.5" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A">контент · 4.5 кб</text>
+            </g>
+
+            <!-- ───── SEGMENT 2 ───── -->
+            <g>
+              <rect x="210" y="50" width="35" height="40" fill="#E94B8B"/>
+              <text x="227.5" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="#fff" font-weight="700">MMM</text>
+
+              <rect x="245" y="50" width="125" height="40" fill="#F0EDE4" stroke="#D9D4C8"/>
+              <text x="307.5" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A">контент · 4.5 кб</text>
+            </g>
+
+            <!-- ───── SEGMENT 3 ───── -->
+            <g>
+              <rect x="400" y="50" width="35" height="40" fill="#E94B8B"/>
+              <text x="417.5" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="#fff" font-weight="700">MMM</text>
+
+              <rect x="435" y="50" width="125" height="40" fill="#F0EDE4" stroke="#D9D4C8"/>
+              <text x="497.5" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#1A1A1A">контент · 4.5 кб</text>
+            </g>
+
+            <!-- ───── CAPTIONS UNDER EACH SEGMENT ───── -->
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963">
+              <text x="20" y="108">10 memory-токенов</text>
+              <text x="20" y="122">инициализированы</text>
+              <text x="20" y="136">случайно</text>
+
+              <text x="210" y="108">на входе —</text>
+              <text x="210" y="122">обновлённые M</text>
+              <text x="210" y="136">из сегмента 1</text>
+
+              <text x="400" y="108">на входе —</text>
+              <text x="400" y="122">обновлённые M</text>
+              <text x="400" y="136">из сегмента 2</text>
+            </g>
+
+            <!-- ───── BOTTOM CAPTION ───── -->
+            <line x1="20" y1="160" x2="560" y2="160" stroke="#D9D4C8"/>
+            <text x="20" y="180" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">memory-токены живут в начале каждого сегмента · после обработки они «запоминают» прочитанное</text>
+            <text x="20" y="195" font-family="JetBrains Mono, monospace" font-size="10" fill="#6E6963" font-style="italic">и передаются дальше — как закладка между главами книги</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.method-cards -->
+
+  <!-- data card -->
+  <div class="m-data-card">
+    <div class="eyebrow"><span class="m-data-mark">⊕</span> данные · на чём учили</div>
+    <p>
+      Авторы первыми использовали для DNA LM сборку <em>T2T-CHM13v2</em> — полностью
+      прочитанную версию человеческого генома, включая центромеры и теломеры, которые
+      в hg38 были пропущены. Чтобы модель не переобучилась на одну ссылочную
+      последовательность, в часть моделей добавили варианты из проекта 1000&nbsp;Genomes.
+      Для мультивидовых моделей в обучение зашли геномы мыши, дрозофилы, нематоды,
+      дрожжей и десятков других эукариот.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="strength">
+  <div class="eyebrow"><span class="num">03 · 04</span> · сильные и слабые стороны</div>
+  <h2>Что удалось, а что не очень</h2>
+
+  <div class="sw-grid">
+
+    <!-- ───── СИЛЬНЫЕ ───── -->
+    <div class="sw-col strengths">
+      <div class="sw-col-head">
+        <span class="sw-col-title">сильные</span>
+        <span class="sw-col-count">4 пункта</span>
+      </div>
+      <ul class="sw-list">
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">01</div>
+          <div class="sw-body">
+            <div class="sw-title">Открытость по полной программе</div>
+            <p class="sw-desc">8 моделей на HuggingFace, код, Colab, веб-сервис <span class="metric">dnalm.airi.net</span></p>
+          </div>
+        </li>
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">02</div>
+          <div class="sw-body">
+            <div class="sw-title">Действительно длинный контекст</div>
+            <p class="sw-desc">На момент выхода — самая длинноконтекстная DNA-модель на трансформере.</p>
+          </div>
+        </li>
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">03</div>
+          <div class="sw-body">
+            <div class="sw-title">Cross-species transfer</div>
+            <p class="sw-desc"><span class="metric">F1 ≈ 0.95</span> на близких млекопитающих без переобучения.</p>
+          </div>
+        </li>
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">04</div>
+          <div class="sw-body">
+            <div class="sw-title">Учит биологию</div>
+            <p class="sw-desc">Через Integrated Gradients модель сама выделяет мотивы транскрипционных факторов — <em>ATF1, GATA2, CTCF</em>.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ───── СЛАБЫЕ ───── -->
+    <div class="sw-col weaknesses" id="weakness">
+      <div class="sw-col-head">
+        <span class="sw-col-title">слабые</span>
+        <span class="sw-col-count">5 пунктов</span>
+      </div>
+      <ul class="sw-list">
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">01</div>
+          <div class="sw-body">
+            <div class="sw-title">Один токен ≈ 9 нуклеотидов — мутации не видно</div>
+            <p class="sw-desc"><span class="metric">AUC 0.66</span> на ClinVar SNV в промоторах.</p>
+          </div>
+        </li>
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">02</div>
+          <div class="sw-body">
+            <div class="sw-title">Не везде побеждает</div>
+            <p class="sw-desc">На промоторах в окне 300 п.о. проигрывает DNABERT, на сплайсинге — SpliceAI.</p>
+          </div>
+        </li>
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">03</div>
+          <div class="sw-body">
+            <div class="sw-title">Multispecies не помог</div>
+            <p class="sw-desc">Добавление геномов других позвоночных не улучшило модель на человеке.</p>
+          </div>
+        </li>
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">04</div>
+          <div class="sw-body">
+            <div class="sw-title">Хрупкая инфраструктура</div>
+            <p class="sw-desc">Sparse attention требует <span class="metric">CUDA + Triton + DeepSpeed</span>; ломается между версиями драйверов.</p>
+          </div>
+        </li>
+        <li class="sw-item" tabindex="0">
+          <div class="sw-num">05</div>
+          <div class="sw-body">
+            <div class="sw-title">Нет сравнения со свежими SSM</div>
+            <p class="sw-desc">Caduceus и Evo появились почти одновременно — но их в работе нет.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<div class="part-divider">
+  <div class="eyebrow"><span class="magenta">— часть 2 —</span> · развитие</div>
+  <p class="deck-2">
+    Что я проверил, к чему пришёл и что предлагаю дальше.
+  </p>
+</div>
+
+<section class="section" id="exp">
+  <div class="eyebrow"><span class="num">05</span> · что я измерил</div>
+  <h2>Где в модели живёт биология</h2>
+  <p>
+    Три эксперимента, каждый — отвечает на один вопрос. Все воспроизводимы из репозитория.
+  </p>
+
+  <div class="sub">
+    <div class="lead"><span class="magenta">5.1</span> · layer-wise probing</div>
+    <h3>Не читай последний слой</h3>
+    <p>
+      Логистическая регрессия на замороженных эмбеддингах каждого из 13 слоёв, 4 задачи,
+      3 сида. Пик качества — в середине модели, не на выходе.
+    </p>
+
+    <div class="chart">
+      <svg class="svg-chart" viewBox="0 0 620 230">
+        <line class="axis-line" x1="50" y1="20" x2="50" y2="190"/>
+        <line class="axis-line" x1="50" y1="190" x2="610" y2="190"/>
+        <text x="44" y="24" text-anchor="end">0.95</text>
+        <text x="44" y="62" text-anchor="end">0.90</text>
+        <text x="44" y="100" text-anchor="end">0.85</text>
+        <text x="44" y="138" text-anchor="end">0.80</text>
+        <text x="44" y="176" text-anchor="end">0.75</text>
+
+        <g>
+          <text x="50" y="204" text-anchor="middle">L0</text>
+          <text x="93" y="204" text-anchor="middle">L1</text>
+          <text x="136" y="204" text-anchor="middle">L2</text>
+          <text x="179" y="204" text-anchor="middle">L3</text>
+          <text x="222" y="204" text-anchor="middle" fill="#E94B8B">L4</text>
+          <text x="265" y="204" text-anchor="middle" fill="#E94B8B">L5</text>
+          <text x="308" y="204" text-anchor="middle">L6</text>
+          <text x="351" y="204" text-anchor="middle">L7</text>
+          <text x="394" y="204" text-anchor="middle">L8</text>
+          <text x="437" y="204" text-anchor="middle">L9</text>
+          <text x="480" y="204" text-anchor="middle">L10</text>
+          <text x="523" y="204" text-anchor="middle">L11</text>
+          <text x="566" y="204" text-anchor="middle">L12</text>
+        </g>
+
+        <line class="peak-marker" x1="222" y1="20" x2="222" y2="190"/>
+
+        <polyline class="data-line accent" points="
+          50,113 93,88 136,90 179,86 222,71 265,66 308,73 351,79 394,80 437,81 480,80 523,89 566,87"/>
+        <g class="data-dot accent">
+          <circle cx="222" cy="71" r="3"/>
+          <circle cx="265" cy="66" r="3.5"/>
+        </g>
+
+        <polyline class="data-line" points="
+          50,144 93,128 136,123 179,117 222,99 265,111 308,107 351,113 394,117 437,118 480,114 523,113 566,128"/>
+        <circle class="data-dot" cx="222" cy="99" r="3"/>
+
+        <polyline class="data-line" points="
+          50,239 93,212 136,224 179,227 222,239 265,233 308,242 351,214 394,210 437,209 480,213 523,222 566,236" stroke="#9A958E" stroke-dasharray="0"/>
+
+        <g transform="translate(440, 28)">
+          <rect x="0" y="0" width="160" height="56" fill="#F0EDE4" stroke="#D9D4C8"/>
+          <line x1="6" y1="14" x2="20" y2="14" stroke="#E94B8B" stroke-width="2"/>
+          <text x="26" y="17" fill="#1A1A1A">coding (peak L5)</text>
+          <line x1="6" y1="30" x2="20" y2="30" stroke="#1A1A1A" stroke-width="1.5"/>
+          <text x="26" y="33" fill="#1A1A1A">promoter (peak L4)</text>
+          <line x1="6" y1="46" x2="20" y2="46" stroke="#9A958E" stroke-width="1.5"/>
+          <text x="26" y="49" fill="#1A1A1A">enhancer (плоско)</text>
+        </g>
+
+        <text x="222" y="14" text-anchor="middle" fill="#E94B8B" font-weight="600">peak</text>
+      </svg>
+      <div class="cap">
+        Промотор: <span class="num">L4 = 0.809 F1</span> vs <span class="num">L12 = 0.778</span> ·
+        Coding: <span class="num">L5 = 0.915</span> vs <span class="num">L12 = 0.887</span>.
+        Классический BERTology-паттерн: MLM-голова тянет последний слой к
+        token-reconstruction, прочь от downstream-биологии.
+      </div>
+    </div>
+  </div>
+
+  <div class="sub">
+    <div class="lead"><span class="magenta">5.2</span> · gena-lm vs hyenadna</div>
+    <h3>«HyenaDNA побеждает 3 из 4» — это артефакт</h3>
+    <p>
+      Наивное сравнение: GENA-LM на последнем слое vs HyenaDNA-tiny (251× меньше параметров) —
+      HyenaDNA побеждает на 3 задачах из 4. Сравнение с E1-лучшим слоем — картина переворачивается.
+    </p>
+
+    <div class="chart">
+      <svg class="svg-chart" viewBox="0 0 620 220">
+        <text x="160" y="14" text-anchor="middle" class="label-strong">L12 (последний)</text>
+        <text x="460" y="14" text-anchor="middle" class="label-strong">E1-best layer</text>
+
+        <g>
+          <text x="20" y="50" font-size="11">Promoter</text>
+          <text x="20" y="90" font-size="11">Enhancer</text>
+          <text x="20" y="130" font-size="11">OCR</text>
+          <text x="20" y="170" font-size="11">Coding</text>
+        </g>
+
+        <rect class="bar muted" x="80" y="42" width="92" height="8"/>
+        <rect class="bar accent" x="80" y="52" width="98" height="8"/>
+        <text x="186" y="50" font-size="9">G 0.777</text>
+        <text x="186" y="60" font-size="9" fill="#E94B8B">H 0.790</text>
+
+        <rect class="bar muted" x="80" y="82" width="62" height="8"/>
+        <rect class="bar accent" x="80" y="92" width="89" height="8"/>
+        <text x="178" y="90" font-size="9">G 0.627</text>
+        <text x="178" y="100" font-size="9" fill="#E94B8B">H 0.679</text>
+
+        <rect class="bar muted" x="80" y="122" width="33" height="8"/>
+        <rect class="bar accent" x="80" y="132" width="55" height="8"/>
+        <text x="143" y="130" font-size="9">G 0.565</text>
+        <text x="143" y="140" font-size="9" fill="#E94B8B">H 0.608</text>
+
+        <rect class="bar" x="80" y="162" width="194" height="8" fill="#1A1A1A"/>
+        <rect class="bar muted" x="80" y="172" width="181" height="8"/>
+        <text x="280" y="170" font-size="9" fill="#1A1A1A" font-weight="600">G 0.887 ✓</text>
+        <text x="280" y="180" font-size="9">H 0.862</text>
+
+        <rect class="bar" x="380" y="42" width="120" height="8"/>
+        <rect class="bar muted" x="380" y="52" width="115" height="8"/>
+        <text x="503" y="50" font-size="9" font-weight="600">G 0.808 ✓ (L4)</text>
+        <text x="503" y="60" font-size="9">H 0.790</text>
+
+        <rect class="bar muted" x="380" y="82" width="84" height="8"/>
+        <rect class="bar accent" x="380" y="92" width="93" height="8"/>
+        <text x="481" y="90" font-size="9">G 0.662 (L1)</text>
+        <text x="481" y="100" font-size="9" fill="#E94B8B">H 0.679 ✓</text>
+
+        <rect class="bar" x="380" y="122" width="68" height="8"/>
+        <rect class="bar muted" x="380" y="132" width="66" height="8"/>
+        <text x="454" y="130" font-size="9" font-weight="600">G 0.615 ≈ (L2)</text>
+        <text x="454" y="140" font-size="9">H 0.608</text>
+
+        <rect class="bar" x="380" y="162" width="220" height="8"/>
+        <rect class="bar muted" x="380" y="172" width="181" height="8"/>
+        <text x="380" y="190" font-size="9" font-weight="600">G 0.915 ✓ (L5) — лучшее</text>
+      </svg>
+      <div class="cap">
+        <span class="num">3 победы Hyena</span> на L12 → <span class="num">2 победы Gena + tie + 1 проигрыш</span>
+        на лучшем слое. Durable lesson: <em>не запрашивай последний слой, если не делаешь fine-tune</em>.
+      </div>
+    </div>
+  </div>
+
+  <div class="sub">
+    <div class="lead"><span class="magenta">5.3</span> · ctcf saturation mutagenesis</div>
+    <h3>Модель действительно знает CTCF</h3>
+    <p>
+      Авторы используют Integrated Gradients для интерпретируемости — но это только корреляция.
+      Я сделал in-silico saturation mutagenesis: меняем каждую позицию мотива на 3 другие
+      буквы и смотрим на сдвиг эмбеддинга. Это даёт <em>каузальный</em> ответ.
+    </p>
+
+    <div class="readout">
+      <div>
+        <div class="big">r = 0.893</div>
+        <div class="lbl">эффект мутации ↔ информативность позиции (PWM)</div>
+      </div>
+      <div>
+        <div class="big big-ink">15×</div>
+        <div class="lbl">сильнее, чем negative control на случайных позициях</div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <svg class="svg-chart" viewBox="0 0 620 130">
+        <text x="10" y="30" font-size="11">A</text>
+        <text x="10" y="55" font-size="11">C</text>
+        <text x="10" y="80" font-size="11">G</text>
+        <text x="10" y="105" font-size="11">T</text>
+
+        <g transform="translate(30, 18)">
+          <g><rect x="0"   y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.46"/><rect x="30"  y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.24"/><rect x="60"  y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.33"/><rect x="90"  y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.62"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="150" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.74"/><rect x="180" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.53"/><rect x="210" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.56"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.77"/><rect x="270" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.79"/><rect x="300" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.53"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.39"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.40"/><rect x="390" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.77"/><rect x="420" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.71"/><rect x="450" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.93"/><rect x="480" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.64"/><rect x="510" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="540" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.57"/></g>
+          <g transform="translate(0,25)"><rect x="0" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.36"/><rect x="30" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.60"/><rect x="60" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.60"/><rect x="90" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.57"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.59"/><rect x="150" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="180" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.61"/><rect x="210" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.15"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.32"/><rect x="270" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.66"/><rect x="300" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.76"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.47"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.45"/><rect x="390" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="420" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.77"/><rect x="450" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.13"/><rect x="480" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.65"/><rect x="510" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.56"/><rect x="540" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.46"/></g>
+          <g transform="translate(0,50)"><rect x="0" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="30" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.52"/><rect x="60" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="90" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.34"/><rect x="150" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="180" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.71"/><rect x="210" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.48"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.63"/><rect x="270" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.15"/><rect x="300" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.81"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.49"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.38"/><rect x="390" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.80"/><rect x="420" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="450" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.62"/><rect x="480" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.18"/><rect x="510" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.17"/><rect x="540" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.21"/></g>
+          <g transform="translate(0,75)"><rect x="0" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="30" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.12"/><rect x="60" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.48"/><rect x="90" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.68"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.64"/><rect x="150" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.61"/><rect x="180" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.15"/><rect x="210" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.55"/><rect x="270" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.81"/><rect x="300" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.18"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.54"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="390" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="420" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.74"/><rect x="450" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.72"/><rect x="480" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="510" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.63"/><rect x="540" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.66"/></g>
+        </g>
+
+        <g font-size="10" fill="#1A1A1A" font-weight="600">
+          <text x="44" y="125">G</text>
+          <text x="74" y="125">A</text>
+          <text x="104" y="125">G</text>
+          <text x="134" y="125">G</text>
+          <text x="164" y="125">G</text>
+          <text x="194" y="125">C</text>
+          <text x="224" y="125">T</text>
+          <text x="254" y="125">C</text>
+          <text x="284" y="125">C</text>
+          <text x="314" y="125">G</text>
+          <text x="344" y="125">T</text>
+          <text x="374" y="125">A</text>
+          <text x="404" y="125">G</text>
+          <text x="434" y="125">C</text>
+          <text x="464" y="125">G</text>
+          <text x="494" y="125">C</text>
+          <text x="524" y="125">G</text>
+          <text x="554" y="125">G</text>
+          <text x="584" y="125">G</text>
+        </g>
+      </svg>
+      <div class="cap">
+        Каждая клетка = средний сдвиг эмбеддинга при замене позиции <em>i</em> на букву <em>b</em>.
+        Magenta-яркость ∝ величине эффекта, тёмные клетки = consensus.
+        Закрывает W10 («token importance ≠ causality») положительным каузальным результатом.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="proposal">
+  <div class="eyebrow"><span class="num">06</span> · что предлагаю развить</div>
+  <h2>Три направления</h2>
+  <p>
+    Ранжированы по соотношению ожидаемого вклада к стоимости. Все три фокусируют слабости,
+    выявленные в §4.
+  </p>
+
+  <div class="prop">
+    <div class="prop-rank">1</div>
+    <div class="prop-body">
+      <h4>Гибридная токенизация: BPE + per-nucleotide для критических позиций</h4>
+      <p>
+        Два параллельных потока внимания — грубый (BPE) для дальнего контекста и тонкий
+        (нуклеотидный) для критической области при патогенной мутации. Прямо адресует
+        главную слабость модели.
+      </p>
+    </div>
+    <div class="prop-meta">
+      <span>impact <span class="delta">+0.09 AUC</span></span>
+      <span>effort 1 неделя</span>
+    </div>
+  </div>
+
+  <div class="prop">
+    <div class="prop-rank">2</div>
+    <div class="prop-body">
+      <h4>Reverse-complement equivariance через архитектуру</h4>
+      <p>
+        ДНК симметрична: одна и та же функция на обеих цепях. GENA-LM учит это через
+        аугментацию — Caduceus получает даром через BiMamba. Встроить equivariant linear
+        layer в GENA-LM и измерить parity-compute сравнение.
+      </p>
+    </div>
+    <div class="prop-meta">
+      <span>impact <span class="delta">+ symm.</span></span>
+      <span>effort 2 недели</span>
+    </div>
+  </div>
+
+  <div class="prop">
+    <div class="prop-rank">3</div>
+    <div class="prop-body">
+      <h4>Active learning для cross-species transfer</h4>
+      <p>
+        F1 0.95 на млекопитающих, 0.7 на беспозвоночных. Выбирать для разметки те
+        последовательности, на которых модель максимально не уверена. Потенциал: достичь
+        species-specific уровня с в 5–10× меньшим числом размеченных примеров.
+      </p>
+    </div>
+    <div class="prop-meta">
+      <span>impact <span class="delta">5–10× ↓ labels</span></span>
+      <span>effort 1 неделя</span>
+    </div>
+  </div>
+</section>
+
+<section class="section correction" id="correction">
+  <div class="eyebrow"><span class="num">07</span> · одна поправка</div>
+  <p>
+    Перед публикацией следующей версии — провести parity-compute сравнение sparse-attention
+    GENA-LM против Caduceus-style RC-equivariant Mamba на одной выборке T2T-CHM13 и
+    одинаковом бюджете GPU-часов. Без этого утверждение, что sparse — оптимальный
+    архитектурный выбор для длинных ДНК-последовательностей, остаётся гипотезой.
+  </p>
+</section>
+
+<section class="section refs" id="refs">
+  <div class="eyebrow"><span class="num">08</span> · источники и код</div>
+  <ol>
+    <li id="ref-1">
+      Fishman V., Kuratov Y., Shmelev A. et al.
+      <em>GENA-LM: a family of open-source foundational DNA language models for long sequences.</em>
+      <a href="https://academic.oup.com/nar/article/53/2/gkae1310/7954905" target="_blank" rel="noopener">Nucleic Acids Research 53(2), gkae1310 (2025)</a>.
+      <span class="doi">doi:10.1093/nar/gkae1310</span>
+    </li>
+    <li id="ref-2">
+      Bulatov A., Kuratov Y., Kapushev Y., Burtsev M.
+      <em>Beyond Attention: Breaking the Limits of Transformer Context Length with Recurrent Memory.</em>
+      <a href="https://ojs.aaai.org/index.php/AAAI/article/view/29722" target="_blank" rel="noopener">Proceedings of the AAAI Conference on Artificial Intelligence, 2024</a>.
+    </li>
+    <li id="ref-3">
+      Nguyen E. et al.
+      <em>HyenaDNA: long-range genomic sequence modeling at single-nucleotide resolution.</em>
+      <a href="https://arxiv.org/abs/2306.15794" target="_blank" rel="noopener">NeurIPS 2023</a>.
+    </li>
+    <li id="ref-4">
+      Schiff Y., Kao W. et al.
+      <em>Caduceus: bi-directional equivariant long-range DNA sequence modeling.</em>
+      <a href="https://arxiv.org/abs/2403.03234" target="_blank" rel="noopener">ICML 2024</a>.
+    </li>
+    <li id="ref-5">
+      Tenney I., Das D., Pavlick E.
+      <em>BERT Rediscovers the Classical NLP Pipeline.</em>
+      <a href="https://arxiv.org/abs/1905.05950" target="_blank" rel="noopener">ACL 2019</a>.
+    </li>
+    <li id="ref-6">
+      Landrum M. J. et al.
+      <em>ClinVar: improvements to accessing data.</em>
+      <a href="https://academic.oup.com/nar/article/48/D1/D835/5601557" target="_blank" rel="noopener">NAR 48, D835–D844 (2020)</a>.
+      <span class="doi">doi:10.1093/nar/gkz972</span>
+    </li>
+    <li>
+      <a href="https://github.com/eugeneskywalker/GENA_LM_AIRI" target="_blank" rel="noopener">github.com/eugeneskywalker/GENA_LM_AIRI</a> — код экспериментов, числа, графики.
+    </li>
+  </ol>
+
+  <div class="footnotes">
+    <p id="fn1">
+      <span class="fn-mark">¹</span>
+      <em>Nucleic Acids Research</em> — журнал, а не конференция, поэтому категория CORE
+      формально не применима. Однако с IF ≈ 16.6 это один из ведущих журналов биоинформатики,
+      по престижу сопоставимый с CORE A*. Альтернатива от AIRI на ICLR 2024 —
+      <em>GOLF</em> — рассмотрена; выбор GENA-LM сделан по соображениям тематической
+      релевантности.
+    </p>
+  </div>
+</section>
+
+</main>
+
+</div>
+
+<div class="watermark">eugene<span class="dot">.</span>research</div>
+
+<script>
+  (function () {
+    const links = Array.from(document.querySelectorAll('.sb-list a[data-dna]'));
+    const targets = links
+      .map(a => {
+        const id = a.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        return el ? { id, el, link: a, color: a.getAttribute('data-dna') } : null;
+      })
+      .filter(Boolean);
+
+    function clearAll() {
+      links.forEach(a => {
+        a.classList.remove('active');
+        a.style.color = '';
+        a.style.borderLeftColor = '';
+      });
+    }
+
+    function setActive(t) {
+      t.link.classList.add('active');
+      t.link.style.color = t.color;
+      t.link.style.borderLeftColor = t.color;
+    }
+
+    function recompute() {
+      const vh = window.innerHeight;
+      const allVisible = targets.filter(t => {
+        const r = t.el.getBoundingClientRect();
+        return r.top < vh * 0.75 && r.bottom > vh * 0.25;
+      });
+      clearAll();
+      if (allVisible.length) {
+        allVisible.forEach(setActive);
+      } else {
+        const mid = vh / 2;
+        let best = targets[0], bestDist = Infinity;
+        for (const t of targets) {
+          const r = t.el.getBoundingClientRect();
+          const d = Math.abs(r.top - mid);
+          if (d < bestDist) { bestDist = d; best = t; }
+        }
+        if (best) setActive(best);
+      }
+    }
+
+    window.addEventListener('scroll', recompute, { passive: true });
+    window.addEventListener('resize', recompute);
+    recompute();
+  })();
+
+  // method cards: toggle open/close on click + keyboard
+  (function () {
+    const cards = document.querySelectorAll('.m-card');
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('is-open');
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          card.classList.toggle('is-open');
+        }
+      });
+    });
+  })();
+
+  // strengths/weaknesses: click to pin/unpin highlight + keyboard
+  (function () {
+    const items = document.querySelectorAll('.sw-item');
+    items.forEach(item => {
+      item.addEventListener('click', () => {
+        item.classList.toggle('is-pinned');
+      });
+      item.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.classList.toggle('is-pinned');
+        }
+      });
+    });
+  })();
+  // === Parametric 3D DNA helix ===
+  (function initDnaHelix() {
+    const svg = document.getElementById('dna-helix');
+    if (!svg) return;
+    const root = document.getElementById('dna-render');
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+
+    const N_POINTS = 80;
+    const TURNS    = 2.2;
+    const H        = 480;
+    const R        = 90;
+    const RUNG_STEP = 5;
+    const TWO_PI   = Math.PI * 2;
+
+    // Pre-create segments for both strands
+    const strand1 = [];
+    const strand2 = [];
+    for (let i = 0; i < N_POINTS - 1; i++) {
+      const a = document.createElementNS(SVG_NS, 'line');
+      a.setAttribute('stroke', 'url(#dna-grad)');
+      root.appendChild(a);
+      strand1.push(a);
+      const b = document.createElementNS(SVG_NS, 'line');
+      b.setAttribute('stroke', 'url(#dna-grad)');
+      root.appendChild(b);
+      strand2.push(b);
+    }
+    // Pre-create rungs every RUNG_STEP points
+    const rungs = [];
+    for (let i = 0; i < N_POINTS; i += RUNG_STEP) {
+      const r = document.createElementNS(SVG_NS, 'line');
+      r.setAttribute('stroke', 'url(#dna-grad)');
+      root.appendChild(r);
+      rungs.push({ i, el: r });
+    }
+
+    const pts1 = new Array(N_POINTS);
+    const pts2 = new Array(N_POINTS);
+    for (let i = 0; i < N_POINTS; i++) {
+      pts1[i] = { x: 0, y: 0, z: 0 };
+      pts2[i] = { x: 0, y: 0, z: 0 };
+    }
+
+    let phase = 0;
+    let rafId = null;
+    let paused = false;
+    const SPEED = 0.012;            // ~9s per full turn at 60fps
+
+    function compute() {
+      for (let i = 0; i < N_POINTS; i++) {
+        const t  = i / (N_POINTS - 1);
+        const a1 = t * TURNS * TWO_PI + phase;
+        const a2 = a1 + Math.PI;
+        const y  = -H / 2 + t * H;
+        pts1[i].x = R * Math.sin(a1);
+        pts1[i].y = y;
+        pts1[i].z = R * Math.cos(a1);
+        pts2[i].x = R * Math.sin(a2);
+        pts2[i].y = y;
+        pts2[i].z = R * Math.cos(a2);
+      }
+    }
+
+    // Reusable scratch array to avoid per-frame allocation
+    const items = new Array((N_POINTS - 1) * 2 + Math.ceil(N_POINTS / RUNG_STEP));
+    for (let k = 0; k < items.length; k++) items[k] = { el: null, avgZ: 0, x1: 0, y1: 0, x2: 0, y2: 0, depth: 0, rung: false };
+
+    function render() {
+      let k = 0;
+      // strand1 segments
+      for (let i = 0; i < N_POINTS - 1; i++) {
+        const a = pts1[i], b = pts1[i + 1];
+        const it = items[k++];
+        it.el = strand1[i];
+        it.x1 = a.x; it.y1 = a.y; it.x2 = b.x; it.y2 = b.y;
+        it.avgZ = (a.z + b.z) * 0.5;
+        it.depth = (it.avgZ + R) / (2 * R);
+        it.rung = false;
+      }
+      // strand2 segments
+      for (let i = 0; i < N_POINTS - 1; i++) {
+        const a = pts2[i], b = pts2[i + 1];
+        const it = items[k++];
+        it.el = strand2[i];
+        it.x1 = a.x; it.y1 = a.y; it.x2 = b.x; it.y2 = b.y;
+        it.avgZ = (a.z + b.z) * 0.5;
+        it.depth = (it.avgZ + R) / (2 * R);
+        it.rung = false;
+      }
+      // rungs
+      for (let r = 0; r < rungs.length; r++) {
+        const { i, el } = rungs[r];
+        const a = pts1[i], b = pts2[i];
+        const it = items[k++];
+        it.el = el;
+        it.x1 = a.x; it.y1 = a.y; it.x2 = b.x; it.y2 = b.y;
+        it.avgZ = (a.z + b.z) * 0.5;
+        it.depth = (it.avgZ + R) / (2 * R);
+        it.rung = true;
+      }
+      // shrink items length if needed (it.el may be undefined past k)
+      // sort back-to-front (lowest avgZ first → drawn first → covered by later)
+      const slice = items.slice(0, k);
+      slice.sort((a, b) => a.avgZ - b.avgZ);
+
+      // apply attrs + reorder DOM
+      for (let j = 0; j < slice.length; j++) {
+        const it = slice[j];
+        const el = it.el;
+        el.setAttribute('x1', it.x1.toFixed(1));
+        el.setAttribute('y1', it.y1.toFixed(1));
+        el.setAttribute('x2', it.x2.toFixed(1));
+        el.setAttribute('y2', it.y2.toFixed(1));
+        if (it.rung) {
+          el.setAttribute('opacity', (0.25 + 0.55 * it.depth).toFixed(2));
+          el.setAttribute('stroke-width', (1.8 + 2.2 * it.depth).toFixed(2));
+        } else {
+          el.setAttribute('opacity', (0.35 + 0.65 * it.depth).toFixed(2));
+          el.setAttribute('stroke-width', (3 + 4 * it.depth).toFixed(2));
+        }
+        root.appendChild(el);
+      }
+    }
+
+    function tick() {
+      if (!paused) {
+        phase += SPEED;
+        if (phase > TWO_PI) phase -= TWO_PI;
+        compute();
+        render();
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    // initial frame
+    compute();
+    render();
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!reduced.matches) {
+      rafId = requestAnimationFrame(tick);
+    }
+    // toggle on reduced-motion change
+    reduced.addEventListener('change', (e) => {
+      paused = e.matches;
+    });
+    // pause when tab is hidden (CPU friendly)
+    document.addEventListener('visibilitychange', () => {
+      paused = document.hidden;
+    });
+  })();
+
+</script>
+</body>
+</html>
