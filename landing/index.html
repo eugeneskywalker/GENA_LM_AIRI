@@ -651,6 +651,34 @@
   .rm-arrows svg { width: 100%; height: 360px; }
   .rm-arrow { transition: opacity .15s ease; }
   .rm-arrow.dimmed { opacity: 0.15; }
+
+  .correction-hero {
+    margin: 56px 0 64px;
+    padding: 28px 0 28px 28px;
+    border-left: 4px solid var(--magenta);
+    background: var(--paper-2);
+    border-radius: 0 4px 4px 0;
+  }
+  .correction-hero .eyebrow {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--magenta); margin-bottom: 10px;
+  }
+  .oc-source {
+    display: inline-block; font-family: var(--font-mono); font-size: 10px;
+    color: #2E5D40; background: #D9ECDF;
+    padding: 2px 7px; border-radius: 2px; margin-bottom: 14px;
+  }
+  .oc-quote {
+    font-family: var(--font-display); font-size: 22px; line-height: 1.42;
+    font-style: italic; color: var(--ink);
+    max-width: 640px; margin: 0;
+  }
+  .oc-accent { color: var(--magenta); font-style: normal; font-weight: 600; }
+  .oc-numbers {
+    font-family: var(--font-mono); font-size: 11px; color: var(--gray);
+    margin: 14px 0 0; max-width: 640px;
+    letter-spacing: 0.02em; line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -4074,13 +4102,14 @@
   </div>
 </section>
 
-<section class="section correction" id="correction">
+<section class="section correction-hero" id="correction">
   <div class="eyebrow"><span class="num">07</span> · одна поправка</div>
-  <p>
-    Перед публикацией следующей версии — провести parity-compute сравнение sparse-attention
-    GENA-LM против Caduceus-style RC-equivariant Mamba на одной выборке T2T-CHM13 и
-    одинаковом бюджете GPU-часов. Без этого утверждение, что sparse — оптимальный
-    архитектурный выбор для длинных ДНК-последовательностей, остаётся гипотезой.
+  <div class="oc-source">← растёт из E3 vs E3-v2</div>
+  <p class="oc-quote">
+    Сравнивать модели не по последнему слою, а по тому, который <span class="oc-accent">лучший для каждой задачи</span>. Это переворачивает вывод: «маленькая модель бьёт большую» превращается в «правильно выбранный слой важнее количества параметров».
+  </p>
+  <p class="oc-numbers">
+    на промоторе: GENA-LM L4 = 0.808 ± 0.006 vs HyenaDNA = 0.790 ± 0.004 · на coding: GENA-LM L5 = 0.915 vs HyenaDNA = 0.862 · источник: results/e3_v2_metrics.json
   </p>
 </section>
 
