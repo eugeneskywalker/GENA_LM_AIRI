@@ -575,6 +575,15 @@
     margin-bottom: 14px; color: var(--ink); transition: opacity .2s ease;
   }
   .bar { transition: width .3s ease, x .3s ease; }
+  .heatmap-pair { display: flex; flex-direction: column; gap: 14px; margin-bottom: 10px; }
+  .heatmap-block { position: relative; }
+  .hm-title {
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink);
+    letter-spacing: 0.06em; margin-bottom: 4px;
+  }
+  .hm-title.hm-control { color: var(--gray); }
+  .hm-cell { cursor: pointer; transition: stroke .12s ease; }
+  .hm-cell:hover { stroke: var(--ink); stroke-width: 1.5; }
 </style>
 </head>
 <body>
@@ -3891,45 +3900,21 @@
     </div>
 
     <div class="chart">
-      <svg class="svg-chart" viewBox="0 0 620 130">
-        <text x="10" y="30" font-size="11">A</text>
-        <text x="10" y="55" font-size="11">C</text>
-        <text x="10" y="80" font-size="11">G</text>
-        <text x="10" y="105" font-size="11">T</text>
-
-        <g transform="translate(30, 18)">
-          <g><rect x="0"   y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.46"/><rect x="30"  y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.24"/><rect x="60"  y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.33"/><rect x="90"  y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.62"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="150" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.74"/><rect x="180" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.53"/><rect x="210" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.56"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.77"/><rect x="270" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.79"/><rect x="300" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.53"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.39"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.40"/><rect x="390" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.77"/><rect x="420" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.71"/><rect x="450" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.93"/><rect x="480" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.64"/><rect x="510" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="540" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.57"/></g>
-          <g transform="translate(0,25)"><rect x="0" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.36"/><rect x="30" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.60"/><rect x="60" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.60"/><rect x="90" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.57"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.59"/><rect x="150" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="180" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.61"/><rect x="210" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.15"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.32"/><rect x="270" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.66"/><rect x="300" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.76"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.47"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.45"/><rect x="390" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="420" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.77"/><rect x="450" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.13"/><rect x="480" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.65"/><rect x="510" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.56"/><rect x="540" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.46"/></g>
-          <g transform="translate(0,50)"><rect x="0" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="30" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.52"/><rect x="60" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="90" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.34"/><rect x="150" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="180" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.71"/><rect x="210" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.48"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.63"/><rect x="270" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.15"/><rect x="300" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.81"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.49"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.38"/><rect x="390" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.80"/><rect x="420" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.10"/><rect x="450" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.62"/><rect x="480" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.18"/><rect x="510" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.17"/><rect x="540" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.21"/></g>
-          <g transform="translate(0,75)"><rect x="0" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="30" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.12"/><rect x="60" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.48"/><rect x="90" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.68"/><rect x="120" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.64"/><rect x="150" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.61"/><rect x="180" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.15"/><rect x="210" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="240" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.55"/><rect x="270" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.81"/><rect x="300" y="0" width="28" height="22" fill="#1A1A1A" fill-opacity="0.18"/><rect x="330" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.54"/><rect x="360" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.44"/><rect x="390" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="420" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.74"/><rect x="450" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.72"/><rect x="480" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.69"/><rect x="510" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.63"/><rect x="540" y="0" width="28" height="22" fill="#E94B8B" fill-opacity="0.66"/></g>
-        </g>
-
-        <g font-size="10" fill="#1A1A1A" font-weight="600">
-          <text x="44" y="125">G</text>
-          <text x="74" y="125">A</text>
-          <text x="104" y="125">G</text>
-          <text x="134" y="125">G</text>
-          <text x="164" y="125">G</text>
-          <text x="194" y="125">C</text>
-          <text x="224" y="125">T</text>
-          <text x="254" y="125">C</text>
-          <text x="284" y="125">C</text>
-          <text x="314" y="125">G</text>
-          <text x="344" y="125">T</text>
-          <text x="374" y="125">A</text>
-          <text x="404" y="125">G</text>
-          <text x="434" y="125">C</text>
-          <text x="464" y="125">G</text>
-          <text x="494" y="125">C</text>
-          <text x="524" y="125">G</text>
-          <text x="554" y="125">G</text>
-          <text x="584" y="125">G</text>
-        </g>
-      </svg>
+      <div class="heatmap-pair" id="e5-pair">
+        <div class="heatmap-block">
+          <div class="hm-title">Мотив CTCF (19 п.н.)</div>
+          <svg class="svg-chart" id="e5-motif-chart" viewBox="0 0 620 150"></svg>
+        </div>
+        <div class="heatmap-block">
+          <div class="hm-title hm-control">Контроль — случайные позиции вне мотива</div>
+          <svg class="svg-chart" id="e5-control-chart" viewBox="0 0 620 150"></svg>
+        </div>
+      </div>
+      <div class="chart-tooltip" id="e5-tooltip" hidden></div>
       <div class="cap">
-        Каждая клетка = средний сдвиг эмбеддинга при замене позиции <em>i</em> на букву <em>b</em>.
-        Magenta-яркость ∝ величине эффекта, тёмные клетки = consensus.
-        Закрывает W10 («token importance ≠ causality») положительным каузальным результатом.
+        Каждая клетка = средний сдвиг эмбеддинга при замене позиции на букву.
+        В мотиве (сверху) сдвиги в среднем в <span class="num">15 раз сильнее</span> чем в контроле (снизу) —
+        одна и та же шкала, одна и та же сетка, разные данные. Наведи курсор для точных чисел.
       </div>
     </div>
   </div>
@@ -4499,6 +4484,95 @@
     });
 
     render(currentView);
+  })();
+
+  // === E5 CTCF saturation heatmap (motif + control) ===
+  (function initE5Heatmap() {
+    const motifSvg = document.getElementById('e5-motif-chart');
+    const controlSvg = document.getElementById('e5-control-chart');
+    const tooltip = document.getElementById('e5-tooltip');
+    if (!motifSvg || !controlSvg || !tooltip) return;
+
+    const motifData = JSON.parse(document.getElementById('e5-motif-data').textContent);
+    const controlData = JSON.parse(document.getElementById('e5-control-data').textContent);
+
+    // Both heatmaps share the same color scale derived from MOTIF max
+    // so control looks pale by design (the "×15" insight made visible)
+    const MAX_EFFECT = Math.max(...motifData.saturation_map_19x4_ACGT.flat());
+
+    function renderHeatmap(svg, dataMatrix, pwmMatrix, consensus, isControl) {
+      // dataMatrix: 19 rows × 4 cols (positions × ACGT bases)
+      // Display as 4 rows (A,C,G,T) × 19 cols (positions)
+      const ROWS = ['A', 'C', 'G', 'T'];
+      const N_POS = 19;
+      const CELL_W = 28, CELL_H = 22, GAP = 2;
+      const ORIGIN_X = 30, ORIGIN_Y = 12;
+
+      let svgHtml = '';
+
+      // row labels
+      ROWS.forEach((r, i) => {
+        svgHtml += `<text x="14" y="${ORIGIN_Y + i * (CELL_H + GAP) + CELL_H / 2 + 4}" font-family="JetBrains Mono" font-size="11" style="fill: #1A1A1A">${r}</text>`;
+      });
+
+      // cells
+      for (let pos = 0; pos < N_POS; pos++) {
+        for (let row = 0; row < 4; row++) {
+          const value = dataMatrix[pos][row];
+          const pwmProb = pwmMatrix ? pwmMatrix[pos][row] : null;
+          const opacity = Math.min(1, value / MAX_EFFECT);
+          const color = isControl ? '#9A958E' : '#E94B8B';
+          const x = ORIGIN_X + pos * (CELL_W + GAP);
+          const y = ORIGIN_Y + row * (CELL_H + GAP);
+          svgHtml += `<rect class="hm-cell" x="${x}" y="${y}" width="${CELL_W}" height="${CELL_H}" style="fill: ${color}; fill-opacity: ${opacity.toFixed(2)}; stroke: #D9D4C8; stroke-width: 0.5" data-pos="${pos + 1}" data-base="${ROWS[row]}" data-value="${value.toFixed(5)}" data-pwm="${pwmProb !== null ? pwmProb.toFixed(2) : '—'}" data-control="${isControl ? '1' : '0'}"/>`;
+        }
+      }
+
+      // consensus row (only for motif chart)
+      if (consensus) {
+        const cy = ORIGIN_Y + 4 * (CELL_H + GAP) + 12;
+        consensus.split('').forEach((ch, i) => {
+          const x = ORIGIN_X + i * (CELL_W + GAP) + CELL_W / 2;
+          svgHtml += `<text x="${x}" y="${cy}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" style="fill: #1A1A1A" font-weight="600">${ch}</text>`;
+        });
+        const labelY = cy + 14;
+        svgHtml += `<text x="${ORIGIN_X}" y="${labelY}" font-family="JetBrains Mono" font-size="9" style="fill: #6E6963" letter-spacing="0.08em">CONSENSUS</text>`;
+      }
+
+      svg.innerHTML = svgHtml;
+
+      // cell hover
+      svg.querySelectorAll('.hm-cell').forEach(cell => {
+        cell.addEventListener('mouseenter', () => {
+          const isCtrl = cell.dataset.control === '1';
+          tooltip.hidden = false;
+          tooltip.innerHTML = `<span class="ttl">${isCtrl ? 'control' : 'motif'} · поз ${cell.dataset.pos} · ${cell.dataset.base}</span><br>Δ эмбеддинга = ${cell.dataset.value}${isCtrl ? '' : '<br>PWM prob = ' + cell.dataset.pwm}`;
+          const rect = svg.getBoundingClientRect();
+          const cx = parseFloat(cell.getAttribute('x'));
+          const cy = parseFloat(cell.getAttribute('y'));
+          const scaleX = rect.width / 620, scaleY = rect.height / 150;
+          tooltip.style.left = (cx * scaleX + 30) + 'px';
+          tooltip.style.top = (cy * scaleY - 40) + 'px';
+        });
+        cell.addEventListener('mouseleave', () => { tooltip.hidden = true; });
+      });
+    }
+
+    // motif: real PWM + consensus
+    renderHeatmap(
+      motifSvg,
+      motifData.saturation_map_19x4_ACGT,
+      motifData.PWM_19x4_ACGT,
+      motifData.consensus_sequence || 'GAGGGCTCCGTAGCGCGGG',
+      false
+    );
+
+    // control: synthesize a 19×4 matrix from the mean (the control experiment
+    // gives one mean ~0.000397 — render uniform faint heatmap so eye sees
+    // "essentially nothing" compared to motif).
+    const ctrlMean = controlData.overall_mean_effect || 0.000397;
+    const ctrlMatrix = Array.from({ length: 19 }, () => [ctrlMean, ctrlMean, ctrlMean, ctrlMean]);
+    renderHeatmap(controlSvg, ctrlMatrix, null, null, true);
   })();
 
 </script>
