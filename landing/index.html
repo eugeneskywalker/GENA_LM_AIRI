@@ -4665,6 +4665,40 @@
     renderHeatmap(controlSvg, ctrlMatrix, null, null, true);
   })();
 
+  // === Roadmap hover highlighting ===
+  (function initRoadmap() {
+    const roadmap = document.querySelector('.roadmap');
+    if (!roadmap) return;
+    const cards = roadmap.querySelectorAll('.rm-card[data-pair]');
+    const arrows = roadmap.querySelectorAll('.rm-arrow[data-pair]');
+
+    function highlight(pair) {
+      cards.forEach(c => {
+        if (c.dataset.pair === pair) {
+          c.classList.add('highlighted');
+          c.classList.remove('dimmed');
+        } else {
+          c.classList.add('dimmed');
+          c.classList.remove('highlighted');
+        }
+      });
+      arrows.forEach(a => {
+        if (a.dataset.pair === pair) a.classList.remove('dimmed');
+        else a.classList.add('dimmed');
+      });
+    }
+
+    function clearHighlight() {
+      cards.forEach(c => c.classList.remove('highlighted', 'dimmed'));
+      arrows.forEach(a => a.classList.remove('dimmed'));
+    }
+
+    [...cards, ...arrows].forEach(el => {
+      el.addEventListener('mouseenter', () => highlight(el.dataset.pair));
+      el.addEventListener('mouseleave', clearHighlight);
+    });
+  })();
+
 </script>
 </body>
 </html>
