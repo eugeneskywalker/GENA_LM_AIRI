@@ -301,37 +301,6 @@
     max-width: 200px;
   }
 
-  .prop {
-    border-top: 1px solid var(--hairline); padding: 18px 0 4px 0;
-    display: grid; grid-template-columns: 40px 1fr 120px; gap: 16px;
-  }
-  .prop:last-child { border-bottom: 1px solid var(--hairline); }
-  .prop-rank {
-    font-family: var(--font-display); font-size: 32px; line-height: 1;
-    color: var(--magenta); letter-spacing: -0.02em;
-  }
-  .prop-body h4 {
-    font-family: var(--font-display); font-size: 18px; font-weight: 500;
-    margin: 0 0 6px 0; letter-spacing: -0.01em;
-  }
-  .prop-body p { font-size: 14px; line-height: 1.5; color: var(--gray); margin: 0; }
-  .prop-meta {
-    font-family: var(--font-mono); font-size: 10px; color: var(--gray);
-    letter-spacing: 0.08em; text-transform: uppercase; text-align: right;
-    padding-top: 6px;
-  }
-  .prop-meta span { display: block; }
-  .prop-meta .delta { color: var(--magenta); font-size: 13px; letter-spacing: 0; text-transform: none; font-family: var(--font-display); }
-
-  .correction {
-    border-top: 1px solid var(--ink); padding-top: 18px; margin: 56px 0 0 0;
-  }
-  .correction .eyebrow { margin-bottom: 10px; }
-  .correction p {
-    font-family: var(--font-display); font-style: italic; font-size: 24px;
-    line-height: 1.35; letter-spacing: -0.015em; color: var(--ink); margin: 0;
-  }
-
   .refs { margin-top: 56px; border-top: 1px solid var(--ink); padding-top: 18px; }
   .refs ol { margin: 0; padding-left: 24px; }
   .refs li { font-size: 13px; line-height: 1.5; color: var(--gray); margin-bottom: 8px; }
@@ -4617,7 +4586,7 @@
 
     // Both heatmaps share the same color scale derived from MOTIF max
     // so control looks pale by design (the "×15" insight made visible)
-    const MAX_EFFECT = Math.max(...motifData.saturation_map_19x4_ACGT.flat());
+    const MAX_EFFECT = Math.max(...motifData.saturation_map_ACGT_by_position.flat());
 
     function renderHeatmap(svg, dataMatrix, pwmMatrix, consensus, isControl) {
       // dataMatrix: 19 rows × 4 cols (positions × ACGT bases)
@@ -4680,8 +4649,8 @@
     // motif: real PWM + consensus
     renderHeatmap(
       motifSvg,
-      motifData.saturation_map_19x4_ACGT,
-      motifData.PWM_19x4_ACGT,
+      motifData.saturation_map_ACGT_by_position,
+      motifData.PWM_ACGT_by_position,
       motifData.consensus_sequence || 'GAGGGCTCCGTAGCGCGGG',
       false
     );
