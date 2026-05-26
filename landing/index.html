@@ -513,10 +513,10 @@
     width: 12px; height: 2px; border-radius: 1px;
   }
   .chart-tooltip {
-    position: absolute; pointer-events: none;
+    position: fixed; pointer-events: none;
     background: var(--ink); color: var(--paper);
     font-family: var(--font-mono); font-size: 11px;
-    padding: 8px 11px; border-radius: 3px; z-index: 10;
+    padding: 8px 11px; border-radius: 3px; z-index: 1000;
     white-space: pre; line-height: 1.5;
     transform: translate(-50%, -100%);
   }
@@ -4845,9 +4845,9 @@
           const cx = parseFloat(hit.getAttribute('cx'));
           const cy = parseFloat(hit.getAttribute('cy'));
           const scaleX = rect.width / W, scaleY = rect.height / H;
-          // svg.offsetLeft/offsetTop = svg's position inside .chart (tooltip's offsetParent)
-          tooltip.style.left = (svg.offsetLeft + cx * scaleX) + 'px';
-          tooltip.style.top  = (svg.offsetTop + cy * scaleY - 8) + 'px';
+          // tooltip uses position: fixed → coordinates are viewport-relative
+          tooltip.style.left = (rect.left + cx * scaleX) + 'px';
+          tooltip.style.top  = (rect.top + cy * scaleY - 8) + 'px';
         });
         hit.addEventListener('mouseleave', () => {
           tooltip.hidden = true;
@@ -4950,8 +4950,8 @@
           const x = parseFloat(bar.getAttribute('x')) + parseFloat(bar.getAttribute('width'));
           const y = parseFloat(bar.getAttribute('y'));
           const scaleX = rect.width / W, scaleY = rect.height / H;
-          tooltip.style.left = (svg.offsetLeft + x * scaleX) + 'px';
-          tooltip.style.top = (svg.offsetTop + y * scaleY - 6) + 'px';
+          tooltip.style.left = (rect.left + x * scaleX) + 'px';
+          tooltip.style.top = (rect.top + y * scaleY - 6) + 'px';
         });
         bar.addEventListener('mouseleave', () => {
           tooltip.hidden = true;
@@ -5037,8 +5037,8 @@
           const cellCx = parseFloat(cell.getAttribute('x')) + cellW / 2;
           const cellCy = parseFloat(cell.getAttribute('y'));
           const scaleX = rect.width / 620, scaleY = rect.height / 150;
-          tooltip.style.left = (svg.offsetLeft + cellCx * scaleX) + 'px';
-          tooltip.style.top = (svg.offsetTop + cellCy * scaleY - 6) + 'px';
+          tooltip.style.left = (rect.left + cellCx * scaleX) + 'px';
+          tooltip.style.top = (rect.top + cellCy * scaleY - 6) + 'px';
         });
         cell.addEventListener('mouseleave', () => { tooltip.hidden = true; });
       });
