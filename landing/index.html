@@ -4306,8 +4306,8 @@
       <svg class="svg-chart" id="e1-chart" viewBox="0 0 620 250"></svg>
       <div class="chart-tooltip" id="e1-tooltip" hidden></div>
       <div class="cap">
-        Промотор: середина (<span class="num">L4 = 0.809</span>) даёт F1 на ~4 % выше последнего слоя (<span class="num">L12 = 0.778</span>).
-        Кодирующие участки: <span class="num">L5 = 0.915</span> против <span class="num">L12 = 0.887</span>.
+        Promoter: середина (<span class="num">L4 = 0.809</span>) даёт F1 на ~4 % выше последнего слоя (<span class="num">L12 = 0.778</span>).
+        Coding: <span class="num">L5 = 0.915</span> против <span class="num">L12 = 0.887</span>.
       </div>
     </div>
   </div>
@@ -4467,7 +4467,7 @@
     Сравнивать модели не по последнему слою, а по тому, который <span class="oc-accent">лучший для каждой задачи</span>. Это переворачивает вывод: «маленькая модель бьёт большую» превращается в «правильно выбранный слой важнее количества параметров».
   </p>
   <p class="oc-numbers">
-    на промоторе: GENA-LM L4 = 0.808 ± 0.006 vs HyenaDNA = 0.790 ± 0.004 · на кодирующих участках: GENA-LM L5 = 0.915 vs HyenaDNA = 0.862 · источник: results/e3_v2_metrics.json
+    на промоторе: GENA-LM L4 = 0.808 ± 0.006 vs HyenaDNA = 0.790 ± 0.004 · на Coding: GENA-LM L5 = 0.915 vs HyenaDNA = 0.862 · источник: results/e3_v2_metrics.json
   </p>
 </section>
 
@@ -4782,7 +4782,7 @@
     const yOf = (f1) => PAD_T + (1 - (f1 - Y_MIN) / (Y_MAX - Y_MIN)) * innerH;
 
     const SERIES = [
-      { key: 'coding',   task: 'кодирующие участки', label: 'кодирующие участки · пик на L5', color: '#E94B8B', strokeWidth: 2 },
+      { key: 'coding',   task: 'Coding',              label: 'Coding · пик на L5',             color: '#E94B8B', strokeWidth: 2 },
       { key: 'promoter', task: 'promoter',           label: 'promoter · пик на L4',           color: '#1A1A1A', strokeWidth: 1.8 },
       { key: 'enhancer', task: 'enhancer',           label: 'enhancer · без пика',            color: '#9A958E', strokeWidth: 1.5 },
       { key: 'ocr',      task: 'OCR',                label: 'OCR · хуже к концу',             color: '#6E6963', strokeWidth: 1.5 },
@@ -4887,15 +4887,15 @@
       best_layer: 'На лучшем слое для каждой задачи GENA-LM выигрывает или ничья на 3 из 4.',
     };
     const CAPTIONS = {
-      last_layer: 'Наивное сравнение. Маленькая HyenaDNA (0.4 M параметров) обходит большую GENA-LM (110 M) на промоторе, энхансере и OCR — выигрывает только на кодирующих участках.',
-      best_layer: 'Сравниваем GENA-LM не на L12, а на том слое, который E1 указывает лучшим для каждой задачи (L4 для промотора, L5 для кодирующих участков и т.д.). HyenaDNA читается с last layer как раньше.',
+      last_layer: 'Наивное сравнение. Маленькая HyenaDNA (0.4 M параметров) обходит большую GENA-LM (110 M) на промоторе, энхансере и OCR — выигрывает только на Coding.',
+      best_layer: 'Сравниваем GENA-LM не на L12, а на том слое, который E1 указывает лучшим для каждой задачи (L4 для промотора, L5 для Coding и т.д.). HyenaDNA читается с last layer как раньше.',
     };
     // display names for task labels on chart and in tooltip
     const TASK_DISPLAY = {
       Promoter: 'Promoter',
       Enhancer: 'Enhancer',
       OCR: 'OCR',
-      Coding: 'Кодирующие участки',
+      Coding: 'Coding',
     };
 
     let currentView = 'last_layer';
