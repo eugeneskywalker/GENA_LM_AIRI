@@ -549,6 +549,125 @@
     color: var(--gray); font-style: italic;
     margin-top: 8px; line-height: 1.5;
   }
+
+  /* §05 intro: progressive-reveal study card */
+  .study-card {
+    margin: 8px 0 32px 0;
+  }
+  .study-actions {
+    display: flex; justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+  .reveal-all {
+    font-family: var(--font-mono); font-size: 11px;
+    background: transparent; border: 1px solid var(--hairline);
+    color: var(--gray); padding: 4px 10px; cursor: pointer;
+    border-radius: 3px; letter-spacing: 0.04em;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .reveal-all:hover { color: var(--ink); border-color: var(--ink); }
+  .reveal-all.hidden { display: none; }
+
+  .study-table {
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .study-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.1fr;
+    cursor: pointer;
+    transition: background-color .2s ease;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .study-row:last-child { border-bottom: none; }
+  .study-row:hover { background-color: var(--paper-2); }
+  .study-cell {
+    position: relative;
+    padding: 14px 16px 14px 16px;
+    border-right: 1px solid var(--hairline);
+    min-height: 92px;
+  }
+  .study-cell:last-child { border-right: none; }
+  .col-h {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--gray);
+    margin-bottom: 8px; line-height: 1.4;
+  }
+  .col-body {
+    font-size: 13.5px; line-height: 1.5; color: var(--ink);
+    opacity: 0; max-height: 0; overflow: hidden;
+    transition: opacity .35s ease;
+  }
+  .col-hint {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--gray-2); font-style: italic;
+    margin-top: 2px;
+    transition: opacity .2s ease;
+  }
+  .study-row .col-shown .col-body { opacity: 1; max-height: 999px; }
+  .study-row[data-stage="1"] .col-gap .col-body,
+  .study-row[data-stage="2"] .col-gap .col-body,
+  .study-row[data-stage="2"] .col-mine .col-body {
+    opacity: 1; max-height: 999px;
+  }
+  .study-row[data-stage="1"] .col-gap .col-hint,
+  .study-row[data-stage="2"] .col-gap .col-hint,
+  .study-row[data-stage="2"] .col-mine .col-hint {
+    display: none;
+  }
+  .study-row .col-shown .col-hint { display: none; }
+
+  .col-arrow {
+    position: absolute; right: -9px; top: 50%;
+    transform: translateY(-50%);
+    background: var(--paper); color: var(--magenta);
+    font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+    padding: 1px 4px; line-height: 1;
+    border-radius: 50%;
+    opacity: 0; transition: opacity .3s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .study-row[data-stage="1"] .col-shown .col-arrow,
+  .study-row[data-stage="2"] .col-shown .col-arrow,
+  .study-row[data-stage="2"] .col-gap .col-arrow {
+    opacity: 1;
+  }
+
+  .exp-num {
+    font-family: var(--font-mono); color: var(--magenta);
+    font-weight: 600; margin-right: 6px;
+  }
+  .jump-hint {
+    display: block; margin-top: 6px;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--magenta); letter-spacing: 0.04em;
+    opacity: 0; transition: opacity .25s ease;
+  }
+  .study-row[data-stage="2"] .col-mine .jump-hint { opacity: 1; }
+
+  /* pulse highlight on jumped-to subsection */
+  .sub.pulse::before {
+    content: '';
+    position: absolute; left: -14px; top: 0; bottom: 0;
+    width: 3px; background: var(--magenta);
+    animation: sub-pulse 1.4s ease-out forwards;
+  }
+  .sub { position: relative; }
+  @keyframes sub-pulse {
+    0%   { opacity: 1; }
+    70%  { opacity: 0.85; }
+    100% { opacity: 0; }
+  }
+
+  /* Mobile: stack columns vertically */
+  @media (max-width: 720px) {
+    .study-row { grid-template-columns: 1fr; }
+    .study-cell { border-right: none; border-bottom: 1px solid var(--hairline); min-height: auto; }
+    .study-cell:last-child { border-bottom: none; }
+    .col-arrow { display: none; }
+  }
+
   .chart-toggle {
     display: flex; gap: 6px; margin-bottom: 12px;
   }
@@ -4104,11 +4223,75 @@
 <section class="section" id="exp">
   <div class="eyebrow"><span class="num">05</span> · что я измерил</div>
   <h2>Где в модели живёт биология</h2>
-  <p>
-    Три эксперимента, каждый — отвечает на один вопрос. Все воспроизводимы из репозитория.
-  </p>
 
-  <div class="sub">
+  <div class="study-card">
+    <div class="study-actions">
+      <button type="button" class="reveal-all" id="study-reveal-all">показать всё ↓</button>
+    </div>
+
+    <div class="study-table">
+
+      <div class="study-row" data-stage="0" data-target="exp-5-1">
+        <div class="study-cell col-shown">
+          <div class="col-h">Что авторы показали</div>
+          <div class="col-body">Проверили модель на 9 задачах, но всегда брали ответ с последнего слоя модели.</div>
+          <div class="col-arrow">→</div>
+        </div>
+        <div class="study-cell col-gap">
+          <div class="col-h">А чего не проверили</div>
+          <div class="col-body">А вдруг другие слои дают ответ точнее? Это в статье не проверяли.</div>
+          <div class="col-hint">▾ клик</div>
+          <div class="col-arrow">→</div>
+        </div>
+        <div class="study-cell col-mine">
+          <div class="col-h">Что я сделал</div>
+          <div class="col-body"><span class="exp-num">5.1</span> Проверил каждый слой модели отдельно на 4 задачах. <span class="jump-hint">↓ к эксперименту</span></div>
+          <div class="col-hint">▾ клик</div>
+        </div>
+      </div>
+
+      <div class="study-row" data-stage="0" data-target="exp-5-2">
+        <div class="study-cell col-shown">
+          <div class="col-h">Что авторы показали</div>
+          <div class="col-body">Сравнили GENA-LM только со старыми ДНК-моделями (DNABERT, Nucleotide Transformer).</div>
+          <div class="col-arrow">→</div>
+        </div>
+        <div class="study-cell col-gap">
+          <div class="col-h">А чего не проверили</div>
+          <div class="col-body">Новые модели — HyenaDNA и Caduceus — вышли почти одновременно, но в сравнении их нет.</div>
+          <div class="col-hint">▾ клик</div>
+          <div class="col-arrow">→</div>
+        </div>
+        <div class="study-cell col-mine">
+          <div class="col-h">Что я сделал</div>
+          <div class="col-body"><span class="exp-num">5.2</span> Сравнил GENA-LM с маленькой HyenaDNA на тех же 4 задачах. <span class="jump-hint">↓ к эксперименту</span></div>
+          <div class="col-hint">▾ клик</div>
+        </div>
+      </div>
+
+      <div class="study-row" data-stage="0" data-target="exp-5-3">
+        <div class="study-cell col-shown">
+          <div class="col-h">Что авторы показали</div>
+          <div class="col-body">Показали: модель сама находит важные участки ДНК — короткие «слова», на которые садятся регулирующие белки.</div>
+          <div class="col-arrow">→</div>
+        </div>
+        <div class="study-cell col-gap">
+          <div class="col-h">А чего не проверили</div>
+          <div class="col-body">Но это только наблюдение «куда смотрит». А если эти буквы реально поменять — отреагирует ли модель как должна по биологии?</div>
+          <div class="col-hint">▾ клик</div>
+          <div class="col-arrow">→</div>
+        </div>
+        <div class="study-cell col-mine">
+          <div class="col-h">Что я сделал</div>
+          <div class="col-body"><span class="exp-num">5.3</span> Взял известный важный участок ДНК (мотив CTCF), менял в нём каждую букву по очереди и смотрел реакцию. <span class="jump-hint">↓ к эксперименту</span></div>
+          <div class="col-hint">▾ клик</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sub" id="exp-5-1">
     <div class="lead"><span class="magenta">5.1</span> · что знает каждый слой</div>
     <h3>Не читай последний слой</h3>
     <p>
@@ -4129,7 +4312,7 @@
     </div>
   </div>
 
-  <div class="sub">
+  <div class="sub" id="exp-5-2">
     <div class="lead"><span class="magenta">5.2</span> · gena-lm vs hyenadna</div>
     <h3>«HyenaDNA побеждает 3 из 4» — это артефакт</h3>
     <p>
@@ -4149,7 +4332,7 @@
     </div>
   </div>
 
-  <div class="sub">
+  <div class="sub" id="exp-5-3">
     <div class="lead"><span class="magenta">5.3</span> · ctcf saturation mutagenesis</div>
     <h3>Модель действительно знает CTCF</h3>
     <p>
@@ -4914,6 +5097,52 @@
       el.addEventListener('mouseenter', () => highlight(el.dataset.pair));
       el.addEventListener('mouseleave', clearHighlight);
     });
+  })();
+
+  // === §05 intro study-card: progressive reveal + jump-to-experiment ===
+  (function initStudyCard() {
+    const card = document.querySelector('.study-card');
+    if (!card) return;
+    const rows = card.querySelectorAll('.study-row');
+    const revealAllBtn = document.getElementById('study-reveal-all');
+
+    function maybeHideRevealAll() {
+      if (!revealAllBtn) return;
+      const allRevealed = [...rows].every(r => r.dataset.stage === '2');
+      revealAllBtn.classList.toggle('hidden', allRevealed);
+    }
+
+    function jumpToTarget(row) {
+      const target = document.getElementById(row.dataset.target);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // remove any existing pulse, force reflow, re-add to restart animation
+      target.classList.remove('pulse');
+      void target.offsetWidth;
+      target.classList.add('pulse');
+      setTimeout(() => target.classList.remove('pulse'), 1500);
+    }
+
+    rows.forEach(row => {
+      row.addEventListener('click', (e) => {
+        const stage = parseInt(row.dataset.stage, 10);
+        // If fully revealed AND user clicked the "mine" column → jump
+        if (stage >= 2) {
+          if (e.target.closest('.col-mine')) jumpToTarget(row);
+          return;
+        }
+        row.dataset.stage = String(stage + 1);
+        maybeHideRevealAll();
+      });
+    });
+
+    if (revealAllBtn) {
+      revealAllBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rows.forEach(r => { r.dataset.stage = '2'; });
+        maybeHideRevealAll();
+      });
+    }
   })();
 
 </script>
