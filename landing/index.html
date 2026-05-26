@@ -4655,11 +4655,15 @@
       false
     );
 
-    // control: synthesize a 19×4 matrix from the mean (the control experiment
-    // gives one mean ~0.000397 — render uniform faint heatmap so eye sees
-    // "essentially nothing" compared to motif).
-    const ctrlMean = controlData.overall_mean_effect || 0.000397;
-    const ctrlMatrix = Array.from({ length: 19 }, () => [ctrlMean, ctrlMean, ctrlMean, ctrlMean]);
+    // control: render the real measured 19×4 matrix from the control experiment.
+    // Shared MAX_EFFECT scale makes control cells appear ~15× fainter than motif
+    // (the actual scientific insight). Fallback to uniform mean only if the
+    // detailed matrix is missing from JSON.
+    let ctrlMatrix = controlData.saturation_map_19x4_ACGT;
+    if (!Array.isArray(ctrlMatrix) || ctrlMatrix.length !== 19) {
+      const ctrlMean = controlData.overall_mean_effect || 0.000397;
+      ctrlMatrix = Array.from({ length: 19 }, () => [ctrlMean, ctrlMean, ctrlMean, ctrlMean]);
+    }
     renderHeatmap(controlSvg, ctrlMatrix, null, null, true);
   })();
 
