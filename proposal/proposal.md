@@ -1,7 +1,7 @@
 # GENA-LM: A Critical Review with Layer-Aware Reproducibility Experiments
 
 **Research Proposal — «Лето с AIRI 2026»**
-**Применitель:** *Korshunov E., bioinformatics student*
+**Автор:** *Korshunov E., bioinformatics student*
 **Reviewed paper:** Fishman, Kuratov, Shmelev, Petrov, Penzar, Shepelin, Chekanov, Kardymon, Burtsev. **GENA-LM: a family of open-source foundational DNA language models for long sequences.** *Nucleic Acids Research*, 53(2), gkae1310 (2025). DOI: [10.1093/nar/gkae1310](https://doi.org/10.1093/nar/gkae1310).
 **Code & results:** <https://github.com/eugeneskywalker/GENA_LM_AIRI>
 

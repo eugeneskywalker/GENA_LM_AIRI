@@ -6,10 +6,9 @@
 Independent evaluation and extension of:
 
 > Fishman V., Kuratov Y., Shmelev A., Petrov M., Penzar D., Shepelin D., Chekanov N., Kardymon O., Burtsev M. (2025). **GENA-LM: a family of open-source foundational DNA language models for long sequences.** *Nucleic Acids Research*, 53(2), gkae1310. DOI: [10.1093/nar/gkae1310](https://doi.org/10.1093/nar/gkae1310).
-> 📦 [GitHub](https://github.com/AIRI-Institute/GENA_LM) · [HuggingFace](https://huggingface.co/AIRI-Institute) · [Web service](https://dnalm.airi.net)
+> [GitHub](https://github.com/AIRI-Institute/GENA_LM) · [HuggingFace](https://huggingface.co/AIRI-Institute) · [Web service](https://dnalm.airi.net)
 
-📄 **Read the proposal:** [`proposal/proposal.md`](proposal/proposal.md)
-📋 **Critical self-review of this proposal:** [`proposal/research_proposal_critical_review.md`](proposal/research_proposal_critical_review.md)
+**Read the proposal:** [`proposal/proposal.md`](proposal/proposal.md)
 
 ## What this is
 
@@ -175,25 +174,23 @@ Important caveats on how to read the head-to-head and DART-Eval-inspired results
 gena-lm-airi-2026/
 ├── proposal/
 │   ├── proposal.md                       # Research Proposal (2 pages)
-│   ├── proposal.pdf                      # Compiled PDF
-│   └── research_proposal_critical_review.md  # Self-review of the proposal
+│   └── proposal.pdf                      # Compiled PDF
 ├── experiments/
 │   ├── sanity_check.py                   # GPU + model load verification
 │   ├── e1_layerwise_probing.py           # E1 — layer-wise BERTology probing (bert-base, 13 layers)
 │   ├── e1_bert_large.py                  # E1-large — same protocol on bert-large (25 layers)
 │   ├── e3_gena_vs_caduceus.py            # E3 — head-to-head with HyenaDNA (last layer)
 │   ├── e3_best_layer.py                  # E3-v2 — GENA-LM at best-per-task layer (from E1)
-│   ├── e4_clustering.py                  # E4 warm-up (last layer only)
-│   ├── e4_clustering_multilayer.py       # E4 v2 (L0/L4/L12 comparison)
+│   ├── e4_clustering_multilayer.py       # E4 — multilayer UMAP clustering (L0/L4/L12)
 │   ├── e5_saturation_mutagenesis.py      # E5 — CTCF motif probing (motif + --control mode)
 │   ├── e6_dart_eval_style.py             # E6 — DART-Eval-inspired 4-way calibration
 │   └── e7_fine_tune_promoter.py          # E7 — fine-tuned GENA-LM on promoter (1 calibration point)
 ├── slurm/                                # sbatch scripts for V100 cluster
-│   ├── setup_env.sh, setup_env_v2.sh
+│   ├── setup_env_v2.sh
 │   ├── sbatch_sanity.sh
 │   ├── sbatch_e1.sh, sbatch_e1_large.sh
 │   ├── sbatch_e3.sh, sbatch_e3_v2.sh
-│   ├── sbatch_e4.sh, sbatch_e4v2.sh
+│   ├── sbatch_e4v2.sh
 │   ├── sbatch_e5.sh, sbatch_e5_control.sh
 │   ├── sbatch_e6.sh
 │   └── sbatch_e7.sh
@@ -202,7 +199,7 @@ gena-lm-airi-2026/
 │   ├── tables/                           # CSV summaries
 │   ├── e1_metrics.json, e1_large_metrics.json
 │   ├── e3_metrics.json, e3_v2_metrics.json
-│   ├── e4_metrics.json, e4_multilayer_metrics.json
+│   ├── e4_multilayer_metrics.json
 │   ├── e5_metrics.json, e5_metrics_control.json
 │   ├── e6_metrics.json
 │   └── e7_fine_tune_metrics.json
@@ -214,7 +211,7 @@ gena-lm-airi-2026/
 
 ```bash
 # 1. Create env (Python 3.11 + PyTorch 2.5 CUDA 12.1 + transformers 4.36)
-bash slurm/setup_env.sh
+bash slurm/setup_env_v2.sh
 conda activate gena
 
 # 2. Sanity check (~2 min): downloads model, runs 1 forward pass
