@@ -516,16 +516,39 @@
     position: absolute; pointer-events: none;
     background: var(--ink); color: var(--paper);
     font-family: var(--font-mono); font-size: 11px;
-    padding: 6px 10px; border-radius: 3px; z-index: 10;
-    white-space: nowrap;
+    padding: 8px 11px; border-radius: 3px; z-index: 10;
+    white-space: pre; line-height: 1.5;
+    transform: translate(-50%, -100%);
+  }
+  .chart-tooltip::after {
+    content: ''; position: absolute;
+    left: 50%; bottom: -5px; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--ink);
   }
   .chart-tooltip .ttl { color: var(--magenta); font-weight: 600; }
   .chart { position: relative; }
   .data-line { fill: none; stroke-width: 1.5; transition: opacity .15s ease; }
   .data-line.muted { opacity: 0.15; }
-  .data-dot { transition: r .12s ease, opacity .15s ease; cursor: pointer; }
+  .data-dot { transition: opacity .15s ease; cursor: pointer; pointer-events: none; }
   .data-dot.muted { opacity: 0.15; }
+  .data-hit { fill: transparent; cursor: pointer; }
+  .data-hit.muted { pointer-events: none; }
   .peak-marker { stroke: var(--magenta); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0.5; }
+
+  /* §5.1 takeaway emphasis + caption hint */
+  .takeaway {
+    margin-top: 8px; font-size: 16px; line-height: 1.55; color: var(--ink);
+    border-left: 2px solid var(--magenta); padding-left: 12px;
+  }
+  .takeaway-key { color: var(--magenta); font-weight: 600; }
+  .cap-hint {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--gray); font-style: italic;
+    margin-top: 8px; line-height: 1.5;
+  }
   .chart-toggle {
     display: flex; gap: 6px; margin-bottom: 12px;
   }
@@ -669,19 +692,201 @@
     "headline": "Peak biology layer is L4-L5 — not the last layer."
   },
   "data": [
-    { "layer": 0,  "promoter": 0.750, "promoter_std": 0.015, "enhancer": 0.626, "enhancer_std": 0.013, "ocr": 0.577, "ocr_std": 0.042, "coding": 0.853, "coding_std": 0.004 },
-    { "layer": 1,  "promoter": 0.771, "promoter_std": 0.030, "enhancer": 0.662, "enhancer_std": 0.026, "ocr": 0.589, "ocr_std": 0.006, "coding": 0.886, "coding_std": 0.020 },
-    { "layer": 2,  "promoter": 0.778, "promoter_std": 0.034, "enhancer": 0.647, "enhancer_std": 0.020, "ocr": 0.615, "ocr_std": 0.027, "coding": 0.882, "coding_std": 0.002 },
-    { "layer": 3,  "promoter": 0.786, "promoter_std": 0.013, "enhancer": 0.643, "enhancer_std": 0.039, "ocr": 0.608, "ocr_std": 0.021, "coding": 0.888, "coding_std": 0.012 },
-    { "layer": 4,  "promoter": 0.809, "promoter_std": 0.005, "enhancer": 0.623, "enhancer_std": 0.031, "ocr": 0.574, "ocr_std": 0.017, "coding": 0.908, "coding_std": 0.009 },
-    { "layer": 5,  "promoter": 0.793, "promoter_std": 0.014, "enhancer": 0.631, "enhancer_std": 0.029, "ocr": 0.571, "ocr_std": 0.028, "coding": 0.915, "coding_std": 0.010 },
-    { "layer": 6,  "promoter": 0.799, "promoter_std": 0.014, "enhancer": 0.621, "enhancer_std": 0.030, "ocr": 0.581, "ocr_std": 0.013, "coding": 0.904, "coding_std": 0.009 },
-    { "layer": 7,  "promoter": 0.791, "promoter_std": 0.018, "enhancer": 0.648, "enhancer_std": 0.012, "ocr": 0.580, "ocr_std": 0.032, "coding": 0.896, "coding_std": 0.004 },
-    { "layer": 8,  "promoter": 0.786, "promoter_std": 0.021, "enhancer": 0.653, "enhancer_std": 0.021, "ocr": 0.565, "ocr_std": 0.015, "coding": 0.895, "coding_std": 0.002 },
-    { "layer": 9,  "promoter": 0.784, "promoter_std": 0.013, "enhancer": 0.655, "enhancer_std": 0.027, "ocr": 0.552, "ocr_std": 0.033, "coding": 0.894, "coding_std": 0.006 },
-    { "layer": 10, "promoter": 0.794, "promoter_std": 0.021, "enhancer": 0.646, "enhancer_std": 0.025, "ocr": 0.554, "ocr_std": 0.011, "coding": 0.895, "coding_std": 0.004 },
-    { "layer": 11, "promoter": 0.796, "promoter_std": 0.017, "enhancer": 0.635, "enhancer_std": 0.030, "ocr": 0.550, "ocr_std": 0.028, "coding": 0.884, "coding_std": 0.003 },
-    { "layer": 12, "promoter": 0.778, "promoter_std": 0.013, "enhancer": 0.627, "enhancer_std": 0.013, "ocr": 0.564, "ocr_std": 0.026, "coding": 0.887, "coding_std": 0.003 }
+    {
+      "layer": 0,
+      "promoter": 0.75,
+      "promoter_std": 0.015,
+      "enhancer": 0.626,
+      "enhancer_std": 0.013,
+      "ocr": 0.577,
+      "ocr_std": 0.042,
+      "coding": 0.853,
+      "coding_std": 0.004,
+      "promoter_auc": 0.829,
+      "enhancer_auc": 0.67,
+      "ocr_auc": 0.617,
+      "coding_auc": 0.927
+    },
+    {
+      "layer": 1,
+      "promoter": 0.771,
+      "promoter_std": 0.03,
+      "enhancer": 0.662,
+      "enhancer_std": 0.026,
+      "ocr": 0.589,
+      "ocr_std": 0.006,
+      "coding": 0.886,
+      "coding_std": 0.02,
+      "promoter_auc": 0.836,
+      "enhancer_auc": 0.697,
+      "ocr_auc": 0.618,
+      "coding_auc": 0.954
+    },
+    {
+      "layer": 2,
+      "promoter": 0.778,
+      "promoter_std": 0.034,
+      "enhancer": 0.647,
+      "enhancer_std": 0.02,
+      "ocr": 0.615,
+      "ocr_std": 0.027,
+      "coding": 0.882,
+      "coding_std": 0.002,
+      "promoter_auc": 0.847,
+      "enhancer_auc": 0.702,
+      "ocr_auc": 0.637,
+      "coding_auc": 0.95
+    },
+    {
+      "layer": 3,
+      "promoter": 0.786,
+      "promoter_std": 0.013,
+      "enhancer": 0.643,
+      "enhancer_std": 0.039,
+      "ocr": 0.608,
+      "ocr_std": 0.021,
+      "coding": 0.888,
+      "coding_std": 0.012,
+      "promoter_auc": 0.865,
+      "enhancer_auc": 0.687,
+      "ocr_auc": 0.639,
+      "coding_auc": 0.958
+    },
+    {
+      "layer": 4,
+      "promoter": 0.809,
+      "promoter_std": 0.005,
+      "enhancer": 0.623,
+      "enhancer_std": 0.031,
+      "ocr": 0.574,
+      "ocr_std": 0.017,
+      "coding": 0.908,
+      "coding_std": 0.009,
+      "promoter_auc": 0.886,
+      "enhancer_auc": 0.687,
+      "ocr_auc": 0.616,
+      "coding_auc": 0.967
+    },
+    {
+      "layer": 5,
+      "promoter": 0.793,
+      "promoter_std": 0.014,
+      "enhancer": 0.631,
+      "enhancer_std": 0.029,
+      "ocr": 0.571,
+      "ocr_std": 0.028,
+      "coding": 0.915,
+      "coding_std": 0.01,
+      "promoter_auc": 0.879,
+      "enhancer_auc": 0.683,
+      "ocr_auc": 0.607,
+      "coding_auc": 0.973
+    },
+    {
+      "layer": 6,
+      "promoter": 0.799,
+      "promoter_std": 0.014,
+      "enhancer": 0.621,
+      "enhancer_std": 0.03,
+      "ocr": 0.581,
+      "ocr_std": 0.013,
+      "coding": 0.904,
+      "coding_std": 0.009,
+      "promoter_auc": 0.881,
+      "enhancer_auc": 0.677,
+      "ocr_auc": 0.617,
+      "coding_auc": 0.971
+    },
+    {
+      "layer": 7,
+      "promoter": 0.791,
+      "promoter_std": 0.018,
+      "enhancer": 0.648,
+      "enhancer_std": 0.012,
+      "ocr": 0.58,
+      "ocr_std": 0.032,
+      "coding": 0.896,
+      "coding_std": 0.004,
+      "promoter_auc": 0.878,
+      "enhancer_auc": 0.686,
+      "ocr_auc": 0.618,
+      "coding_auc": 0.968
+    },
+    {
+      "layer": 8,
+      "promoter": 0.786,
+      "promoter_std": 0.021,
+      "enhancer": 0.653,
+      "enhancer_std": 0.021,
+      "ocr": 0.565,
+      "ocr_std": 0.015,
+      "coding": 0.895,
+      "coding_std": 0.002,
+      "promoter_auc": 0.873,
+      "enhancer_auc": 0.693,
+      "ocr_auc": 0.6,
+      "coding_auc": 0.969
+    },
+    {
+      "layer": 9,
+      "promoter": 0.784,
+      "promoter_std": 0.013,
+      "enhancer": 0.655,
+      "enhancer_std": 0.027,
+      "ocr": 0.552,
+      "ocr_std": 0.033,
+      "coding": 0.894,
+      "coding_std": 0.006,
+      "promoter_auc": 0.877,
+      "enhancer_auc": 0.689,
+      "ocr_auc": 0.59,
+      "coding_auc": 0.967
+    },
+    {
+      "layer": 10,
+      "promoter": 0.794,
+      "promoter_std": 0.021,
+      "enhancer": 0.646,
+      "enhancer_std": 0.025,
+      "ocr": 0.554,
+      "ocr_std": 0.011,
+      "coding": 0.895,
+      "coding_std": 0.004,
+      "promoter_auc": 0.875,
+      "enhancer_auc": 0.679,
+      "ocr_auc": 0.59,
+      "coding_auc": 0.967
+    },
+    {
+      "layer": 11,
+      "promoter": 0.796,
+      "promoter_std": 0.017,
+      "enhancer": 0.635,
+      "enhancer_std": 0.03,
+      "ocr": 0.55,
+      "ocr_std": 0.028,
+      "coding": 0.884,
+      "coding_std": 0.003,
+      "promoter_auc": 0.876,
+      "enhancer_auc": 0.674,
+      "ocr_auc": 0.59,
+      "coding_auc": 0.964
+    },
+    {
+      "layer": 12,
+      "promoter": 0.778,
+      "promoter_std": 0.013,
+      "enhancer": 0.627,
+      "enhancer_std": 0.013,
+      "ocr": 0.564,
+      "ocr_std": 0.026,
+      "coding": 0.887,
+      "coding_std": 0.003,
+      "promoter_auc": 0.874,
+      "enhancer_auc": 0.668,
+      "ocr_auc": 0.598,
+      "coding_auc": 0.965
+    }
   ],
   "annotations": {
     "promoter_peak_layer": 4,
@@ -3904,11 +4109,13 @@
   </p>
 
   <div class="sub">
-    <div class="lead"><span class="magenta">5.1</span> · layer-wise probing</div>
+    <div class="lead"><span class="magenta">5.1</span> · layer-wise probing · послойный разбор</div>
     <h3>Не читай последний слой</h3>
     <p>
-      Логистическая регрессия на замороженных эмбеддингах каждого из 13 слоёв, 4 задачи,
-      3 сида. Пик качества — в середине модели, не на выходе.
+      У GENA-LM 13 слоёв. Я проверил каждый отдельно на 4 задачах, по 3 повторения с разными случайными сидами.
+    </p>
+    <p class="takeaway">
+      <span class="takeaway-key">Биология модели живёт в середине</span> — около 4–5 слоя из 12. Последний слой почти всегда хуже.
     </p>
 
     <div class="chart">
@@ -3916,9 +4123,11 @@
       <svg class="svg-chart" id="e1-chart" viewBox="0 0 620 250"></svg>
       <div class="chart-tooltip" id="e1-tooltip" hidden></div>
       <div class="cap">
-        Промотор: <span class="num">L4 = 0.809 F1</span> vs <span class="num">L12 = 0.778</span> ·
-        Coding: <span class="num">L5 = 0.915</span> vs <span class="num">L12 = 0.887</span>.
-        Наведи курсор на точку — увидишь точное значение и std. Клик по легенде включает/выключает линию.
+        Промотор: середина (<span class="num">L4 = 0.809</span>) даёт F1 на ~4 % выше последнего слоя (<span class="num">L12 = 0.778</span>).
+        Coding: <span class="num">L5 = 0.915</span> против <span class="num">L12 = 0.887</span>.
+      </div>
+      <div class="cap-hint">
+        Наведи курсор на точку — увидишь точное значение и разброс по 3 повторениям. Клик по легенде включает или скрывает линию.
       </div>
     </div>
   </div>
@@ -4393,10 +4602,10 @@
     const yOf = (f1) => PAD_T + (1 - (f1 - Y_MIN) / (Y_MAX - Y_MIN)) * innerH;
 
     const SERIES = [
-      { key: 'coding',   label: 'coding (peak L5)',   color: '#E94B8B', strokeWidth: 2 },
-      { key: 'promoter', label: 'promoter (peak L4)', color: '#1A1A1A', strokeWidth: 1.8 },
-      { key: 'enhancer', label: 'enhancer (плоско)',  color: '#9A958E', strokeWidth: 1.5 },
-      { key: 'ocr',      label: 'OCR (последний слой хуже)', color: '#6E6963', strokeWidth: 1.5 },
+      { key: 'coding',   label: 'coding · пик на L5',   color: '#E94B8B', strokeWidth: 2 },
+      { key: 'promoter', label: 'promoter · пик на L4', color: '#1A1A1A', strokeWidth: 1.8 },
+      { key: 'enhancer', label: 'enhancer · без пика',  color: '#9A958E', strokeWidth: 1.5 },
+      { key: 'ocr',      label: 'OCR · хуже к концу',   color: '#6E6963', strokeWidth: 1.5 },
     ];
     const active = { coding: true, promoter: true, enhancer: true, ocr: true };
 
@@ -4420,40 +4629,45 @@
       }
       // peak marker at L4
       svgHtml += `<line class="peak-marker" x1="${xOf(4)}" y1="${PAD_T}" x2="${xOf(4)}" y2="${H - PAD_B}"/>`;
-      svgHtml += `<text x="${xOf(4)}" y="${PAD_T - 8}" text-anchor="middle" style="fill: #E94B8B" font-family="JetBrains Mono" font-size="10" font-weight="600">peak biology</text>`;
+      svgHtml += `<text x="${xOf(4)}" y="${PAD_T - 8}" text-anchor="middle" style="fill: #E94B8B" font-family="JetBrains Mono" font-size="10" font-weight="600">пик</text>`;
 
-      // series lines
+      // series lines + dots + invisible hit-targets (for easier hover)
       for (const s of SERIES) {
         const mutedClass = active[s.key] ? '' : ' muted';
         const pts = data.map(d => `${xOf(d.layer)},${yOf(d[s.key])}`).join(' ');
         svgHtml += `<polyline class="data-line${mutedClass}" points="${pts}" style="stroke: ${s.color}; stroke-width: ${s.strokeWidth}"/>`;
-        // dots
         for (const d of data) {
-          svgHtml += `<circle class="data-dot${mutedClass}" cx="${xOf(d.layer)}" cy="${yOf(d[s.key])}" r="3" style="fill: ${s.color}" data-series="${s.key}" data-layer="${d.layer}" data-f1="${d[s.key].toFixed(3)}" data-std="${(d[s.key + '_std'] || 0).toFixed(3)}"/>`;
+          const cx = xOf(d.layer), cy = yOf(d[s.key]);
+          const f1 = d[s.key].toFixed(3);
+          const std = (d[s.key + '_std'] || 0).toFixed(3);
+          const auc = (d[s.key + '_auc'] != null) ? d[s.key + '_auc'].toFixed(3) : '—';
+          // visible dot — no pointer events, just visual
+          svgHtml += `<circle class="data-dot${mutedClass}" cx="${cx}" cy="${cy}" r="3" style="fill: ${s.color}"/>`;
+          // invisible hit target — larger, catches hover
+          svgHtml += `<circle class="data-hit${mutedClass}" cx="${cx}" cy="${cy}" r="9" data-series="${s.key}" data-layer="${d.layer}" data-f1="${f1}" data-std="${std}" data-auc="${auc}"/>`;
         }
       }
       svg.innerHTML = svgHtml;
 
-      // dot hover
-      svg.querySelectorAll('.data-dot').forEach(dot => {
-        dot.addEventListener('mouseenter', (e) => {
-          const layer = dot.dataset.layer;
-          const series = dot.dataset.series;
-          const f1 = dot.dataset.f1;
-          const std = dot.dataset.std;
+      // hit-target hover → tooltip + grow visible dot
+      svg.querySelectorAll('.data-hit:not(.muted)').forEach(hit => {
+        hit.addEventListener('mouseenter', () => {
+          const { layer, series, f1, std, auc } = hit.dataset;
           tooltip.hidden = false;
-          tooltip.innerHTML = `<span class="ttl">L${layer} · ${series}</span><br>F1 = ${f1} ± ${std}`;
+          // multi-line via \n; CSS has white-space: pre
+          tooltip.innerHTML =
+            `<span class="ttl">Слой ${layer} · ${series}</span>\n` +
+            `F1    ${f1} ± ${std}\n` +
+            `AUC   ${auc}`;
           const rect = svg.getBoundingClientRect();
-          const cx = parseFloat(dot.getAttribute('cx'));
-          const cy = parseFloat(dot.getAttribute('cy'));
+          const cx = parseFloat(hit.getAttribute('cx'));
+          const cy = parseFloat(hit.getAttribute('cy'));
           const scaleX = rect.width / W, scaleY = rect.height / H;
-          tooltip.style.left = (cx * scaleX + 10) + 'px';
-          tooltip.style.top  = (cy * scaleY - 30) + 'px';
-          dot.setAttribute('r', '5');
+          tooltip.style.left = (cx * scaleX) + 'px';
+          tooltip.style.top  = (cy * scaleY - 8) + 'px';
         });
-        dot.addEventListener('mouseleave', () => {
+        hit.addEventListener('mouseleave', () => {
           tooltip.hidden = true;
-          dot.setAttribute('r', '3');
         });
       });
     }
