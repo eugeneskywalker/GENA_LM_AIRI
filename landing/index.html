@@ -4109,10 +4109,10 @@
   </p>
 
   <div class="sub">
-    <div class="lead"><span class="magenta">5.1</span> · layer-wise probing · послойный разбор</div>
+    <div class="lead"><span class="magenta">5.1</span> · что знает каждый слой</div>
     <h3>Не читай последний слой</h3>
     <p>
-      У GENA-LM 13 слоёв. Я проверил каждый отдельно на 4 задачах, по 3 повторения с разными случайными сидами.
+      У GENA-LM 12 трансформер-слоёв. Я снял эмбеддинги с каждого (плюс с входной точки L0) и проверил всё на 4 задачах, по 3 повторения с разными случайными сидами.
     </p>
     <p class="takeaway">
       <span class="takeaway-key">Биология модели живёт в середине</span> — около 4–5 слоя из 12. Последний слой почти всегда хуже.
@@ -4124,10 +4124,7 @@
       <div class="chart-tooltip" id="e1-tooltip" hidden></div>
       <div class="cap">
         Промотор: середина (<span class="num">L4 = 0.809</span>) даёт F1 на ~4 % выше последнего слоя (<span class="num">L12 = 0.778</span>).
-        Coding: <span class="num">L5 = 0.915</span> против <span class="num">L12 = 0.887</span>.
-      </div>
-      <div class="cap-hint">
-        Наведи курсор на точку — увидишь точное значение и разброс по 3 повторениям. Клик по легенде включает или скрывает линию.
+        Кодирующие участки: <span class="num">L5 = 0.915</span> против <span class="num">L12 = 0.887</span>.
       </div>
     </div>
   </div>
@@ -4602,11 +4599,12 @@
     const yOf = (f1) => PAD_T + (1 - (f1 - Y_MIN) / (Y_MAX - Y_MIN)) * innerH;
 
     const SERIES = [
-      { key: 'coding',   label: 'coding · пик на L5',   color: '#E94B8B', strokeWidth: 2 },
-      { key: 'promoter', label: 'promoter · пик на L4', color: '#1A1A1A', strokeWidth: 1.8 },
-      { key: 'enhancer', label: 'enhancer · без пика',  color: '#9A958E', strokeWidth: 1.5 },
-      { key: 'ocr',      label: 'OCR · хуже к концу',   color: '#6E6963', strokeWidth: 1.5 },
+      { key: 'coding',   task: 'кодирующие участки', label: 'кодирующие участки · пик на L5', color: '#E94B8B', strokeWidth: 2 },
+      { key: 'promoter', task: 'promoter',           label: 'promoter · пик на L4',           color: '#1A1A1A', strokeWidth: 1.8 },
+      { key: 'enhancer', task: 'enhancer',           label: 'enhancer · без пика',            color: '#9A958E', strokeWidth: 1.5 },
+      { key: 'ocr',      task: 'OCR',                label: 'OCR · хуже к концу',             color: '#6E6963', strokeWidth: 1.5 },
     ];
+    const TASK_BY_KEY = Object.fromEntries(SERIES.map(s => [s.key, s.task]));
     const active = { coding: true, promoter: true, enhancer: true, ocr: true };
 
     function render() {
@@ -4649,22 +4647,24 @@
       }
       svg.innerHTML = svgHtml;
 
-      // hit-target hover → tooltip + grow visible dot
+      // hit-target hover → tooltip positioned relative to .chart (tooltip's offsetParent)
       svg.querySelectorAll('.data-hit:not(.muted)').forEach(hit => {
         hit.addEventListener('mouseenter', () => {
           const { layer, series, f1, std, auc } = hit.dataset;
+          const taskName = TASK_BY_KEY[series] || series;
           tooltip.hidden = false;
           // multi-line via \n; CSS has white-space: pre
           tooltip.innerHTML =
-            `<span class="ttl">Слой ${layer} · ${series}</span>\n` +
+            `<span class="ttl">Слой ${layer} · ${taskName}</span>\n` +
             `F1    ${f1} ± ${std}\n` +
             `AUC   ${auc}`;
           const rect = svg.getBoundingClientRect();
           const cx = parseFloat(hit.getAttribute('cx'));
           const cy = parseFloat(hit.getAttribute('cy'));
           const scaleX = rect.width / W, scaleY = rect.height / H;
-          tooltip.style.left = (cx * scaleX) + 'px';
-          tooltip.style.top  = (cy * scaleY - 8) + 'px';
+          // svg.offsetLeft/offsetTop = svg's position inside .chart (tooltip's offsetParent)
+          tooltip.style.left = (svg.offsetLeft + cx * scaleX) + 'px';
+          tooltip.style.top  = (svg.offsetTop + cy * scaleY - 8) + 'px';
         });
         hit.addEventListener('mouseleave', () => {
           tooltip.hidden = true;
@@ -4767,8 +4767,8 @@
           const x = parseFloat(bar.getAttribute('x')) + parseFloat(bar.getAttribute('width'));
           const y = parseFloat(bar.getAttribute('y'));
           const scaleX = rect.width / W, scaleY = rect.height / H;
-          tooltip.style.left = (x * scaleX + 10) + 'px';
-          tooltip.style.top = (y * scaleY - 16) + 'px';
+          tooltip.style.left = (svg.offsetLeft + x * scaleX) + 'px';
+          tooltip.style.top = (svg.offsetTop + y * scaleY - 6) + 'px';
         });
         bar.addEventListener('mouseleave', () => {
           tooltip.hidden = true;
@@ -4850,11 +4850,12 @@
           tooltip.hidden = false;
           tooltip.innerHTML = `<span class="ttl">${isCtrl ? 'control' : 'motif'} · поз ${cell.dataset.pos} · ${cell.dataset.base}</span><br>Δ эмбеддинга = ${cell.dataset.value}${isCtrl ? '' : '<br>PWM prob = ' + cell.dataset.pwm}`;
           const rect = svg.getBoundingClientRect();
-          const cx = parseFloat(cell.getAttribute('x'));
-          const cy = parseFloat(cell.getAttribute('y'));
+          const cellW = parseFloat(cell.getAttribute('width'));
+          const cellCx = parseFloat(cell.getAttribute('x')) + cellW / 2;
+          const cellCy = parseFloat(cell.getAttribute('y'));
           const scaleX = rect.width / 620, scaleY = rect.height / 150;
-          tooltip.style.left = (cx * scaleX + 30) + 'px';
-          tooltip.style.top = (cy * scaleY - 40) + 'px';
+          tooltip.style.left = (svg.offsetLeft + cellCx * scaleX) + 'px';
+          tooltip.style.top = (svg.offsetTop + cellCy * scaleY - 6) + 'px';
         });
         cell.addEventListener('mouseleave', () => { tooltip.hidden = true; });
       });
