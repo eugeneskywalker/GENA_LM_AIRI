@@ -4467,7 +4467,7 @@
     Сравнивать модели не по последнему слою, а по тому, который <span class="oc-accent">лучший для каждой задачи</span>. Это переворачивает вывод: «маленькая модель бьёт большую» превращается в «правильно выбранный слой важнее количества параметров».
   </p>
   <p class="oc-numbers">
-    на промоторе: GENA-LM L4 = 0.808 ± 0.006 vs HyenaDNA = 0.790 ± 0.004 · на coding: GENA-LM L5 = 0.915 vs HyenaDNA = 0.862 · источник: results/e3_v2_metrics.json
+    на промоторе: GENA-LM L4 = 0.808 ± 0.006 vs HyenaDNA = 0.790 ± 0.004 · на кодирующих участках: GENA-LM L5 = 0.915 vs HyenaDNA = 0.862 · источник: results/e3_v2_metrics.json
   </p>
 </section>
 
@@ -4887,8 +4887,15 @@
       best_layer: 'На лучшем слое для каждой задачи GENA-LM выигрывает или ничья на 3 из 4.',
     };
     const CAPTIONS = {
-      last_layer: 'Наивное сравнение. Маленькая HyenaDNA (0.4 M параметров) обходит большую GENA-LM (110 M) на промоторе, энхансере и OCR — выигрывает только coding.',
-      best_layer: 'Сравниваем GENA-LM не на L12, а на том слое, который E1 указывает лучшим для каждой задачи (L4 для промотора, L5 для coding и т.д.). HyenaDNA читается с last layer как раньше.',
+      last_layer: 'Наивное сравнение. Маленькая HyenaDNA (0.4 M параметров) обходит большую GENA-LM (110 M) на промоторе, энхансере и OCR — выигрывает только на кодирующих участках.',
+      best_layer: 'Сравниваем GENA-LM не на L12, а на том слое, который E1 указывает лучшим для каждой задачи (L4 для промотора, L5 для кодирующих участков и т.д.). HyenaDNA читается с last layer как раньше.',
+    };
+    // display names for task labels on chart and in tooltip
+    const TASK_DISPLAY = {
+      Promoter: 'Promoter',
+      Enhancer: 'Enhancer',
+      OCR: 'OCR',
+      Coding: 'Кодирующие участки',
     };
 
     let currentView = 'last_layer';
@@ -4921,19 +4928,20 @@
         const hyenaY = yBase + 2;
         const layerLabel = (view === 'best_layer' && row.gena_layer != null) ? ` (L${row.gena_layer})` : '';
 
+        const taskDisplay = TASK_DISPLAY[row.task] || row.task;
         // task label
-        svgHtml += `<text x="${PAD_L - 10}" y="${yBase + 4}" text-anchor="end" font-family="Source Sans 3" font-size="13" style="fill: #1A1A1A">${row.task}</text>`;
+        svgHtml += `<text x="${PAD_L - 10}" y="${yBase + 4}" text-anchor="end" font-family="Source Sans 3" font-size="13" style="fill: #1A1A1A">${taskDisplay}</text>`;
 
         // GENA bar
         const genaW = Math.max(0, xOf(row.gena) - PAD_L);
         const genaColor = row.winner === 'gena' ? '#1A1A1A' : '#9A958E';
-        svgHtml += `<rect class="bar" x="${PAD_L}" y="${genaY}" width="${genaW}" height="${BAR_H}" style="fill: ${genaColor}" data-model="GENA-LM" data-task="${row.task}" data-f1="${row.gena.toFixed(3)}" data-std="${row.gena_std.toFixed(3)}" data-layer="${row.gena_layer ?? 12}"/>`;
+        svgHtml += `<rect class="bar" x="${PAD_L}" y="${genaY}" width="${genaW}" height="${BAR_H}" style="fill: ${genaColor}" data-model="GENA-LM" data-task="${taskDisplay}" data-f1="${row.gena.toFixed(3)}" data-std="${row.gena_std.toFixed(3)}" data-layer="${row.gena_layer ?? 12}"/>`;
         svgHtml += `<text x="${xOf(row.gena) + 6}" y="${genaY + BAR_H - 1}" font-family="JetBrains Mono" font-size="10" style="fill: #1A1A1A">G ${row.gena.toFixed(3)}${layerLabel}${row.winner === 'gena' ? ' ✓' : ''}</text>`;
 
         // HyenaDNA bar
         const hyenaW = Math.max(0, xOf(row.hyena) - PAD_L);
         const hyenaColor = row.winner === 'hyena' ? '#E94B8B' : '#9A958E';
-        svgHtml += `<rect class="bar" x="${PAD_L}" y="${hyenaY}" width="${hyenaW}" height="${BAR_H}" style="fill: ${hyenaColor}" data-model="HyenaDNA" data-task="${row.task}" data-f1="${row.hyena.toFixed(3)}" data-std="${row.hyena_std.toFixed(3)}"/>`;
+        svgHtml += `<rect class="bar" x="${PAD_L}" y="${hyenaY}" width="${hyenaW}" height="${BAR_H}" style="fill: ${hyenaColor}" data-model="HyenaDNA" data-task="${taskDisplay}" data-f1="${row.hyena.toFixed(3)}" data-std="${row.hyena_std.toFixed(3)}"/>`;
         svgHtml += `<text x="${xOf(row.hyena) + 6}" y="${hyenaY + BAR_H - 1}" font-family="JetBrains Mono" font-size="10" style="fill: ${hyenaColor}">H ${row.hyena.toFixed(3)}${row.winner === 'hyena' ? ' ✓' : ''}</text>`;
       });
 
