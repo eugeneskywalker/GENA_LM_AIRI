@@ -584,6 +584,73 @@
   .hm-title.hm-control { color: var(--gray); }
   .hm-cell { cursor: pointer; transition: stroke .12s ease; }
   .hm-cell:hover { stroke: var(--ink); stroke-width: 1.5; }
+
+  .rm-intro {
+    max-width: 580px; color: var(--gray); margin-bottom: 28px;
+  }
+  .roadmap {
+    display: grid; grid-template-columns: 1fr 70px 1.3fr;
+    gap: 0; margin: 24px 0; align-items: start;
+  }
+  @media (max-width: 720px) {
+    .roadmap { grid-template-columns: 1fr; }
+    .rm-arrows { display: none; }
+  }
+  .rm-col-head {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--gray); margin-bottom: 12px; padding-bottom: 6px;
+    border-bottom: 1px dashed var(--hairline);
+  }
+  .rm-list { list-style: none; margin: 0; padding: 0;
+             display: flex; flex-direction: column; gap: 18px; }
+  .rm-card {
+    padding: 12px 14px; border-radius: 4px;
+    transition: opacity .15s ease, border-color .15s ease, background-color .15s ease;
+  }
+  .rm-card.find {
+    background: #F8FBF6; border: 1px solid #4A9D6B;
+  }
+  .rm-card.prop {
+    background: #FEF9FC; border: 1px solid var(--magenta);
+  }
+  .rm-card.dimmed { opacity: 0.3; }
+  .rm-card.highlighted { border-width: 2px; box-shadow: 0 0 0 1px var(--magenta); }
+  .rm-tag {
+    display: inline-block; font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.06em; color: #2E5D40; background: #D9ECDF;
+    padding: 1px 6px; border-radius: 2px; margin-bottom: 6px;
+  }
+  .rm-title { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--ink); }
+  .rm-metric {
+    font-family: var(--font-mono); font-size: 11px;
+    color: #2E5D40; margin-top: 5px; font-weight: 500;
+  }
+  .rm-card.prop .rm-metric { color: var(--magenta); }
+  .rm-note { font-size: 12px; color: var(--gray); margin: 6px 0 0; line-height: 1.5; }
+  .rm-prop-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .rm-ord {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--magenta); font-weight: 600; letter-spacing: 0.08em;
+  }
+  .rm-source {
+    font-family: var(--font-mono); font-size: 9px;
+    color: #2E5D40; background: #D9ECDF;
+    padding: 1px 6px; border-radius: 2px;
+  }
+  .rm-meta {
+    display: flex; gap: 14px; margin-top: 9px;
+    padding-top: 8px; border-top: 1px dashed #EBD9E4;
+    font-family: var(--font-mono); font-size: 10px;
+  }
+  .rm-impact { color: #1A8A4A; }
+  .rm-effort { color: var(--gray); }
+  .rm-arrows svg { width: 100%; height: 360px; }
+  .rm-arrow { transition: opacity .15s ease; }
+  .rm-arrow.dimmed { opacity: 0.15; }
 </style>
 </head>
 <body>
@@ -3928,58 +3995,81 @@
 </div>
 
 <section class="section" id="proposal">
-  <div class="eyebrow"><span class="num">06</span> · что предлагаю развить</div>
-  <h2>Три направления</h2>
-  <p>
-    Ранжированы по соотношению ожидаемого вклада к стоимости. Все три фокусируют слабости,
-    выявленные в §4.
+  <div class="eyebrow"><span class="num">06</span> · дорожная карта</div>
+  <h2>От моих экспериментов — к тому, что предлагаю развить</h2>
+  <p class="rm-intro">
+    Слева — что я нашёл в экспериментах §05. Справа — что из этого логично развить дальше. Каждая стрелка — конкретный результат, ведущий к конкретному предложению.
   </p>
 
-  <div class="prop">
-    <div class="prop-rank">1</div>
-    <div class="prop-body">
-      <h4>Гибридная токенизация: BPE + per-nucleotide для критических позиций</h4>
-      <p>
-        Два параллельных потока внимания — грубый (BPE) для дальнего контекста и тонкий
-        (нуклеотидный) для критической области при патогенной мутации. Прямо адресует
-        главную слабость модели.
-      </p>
+  <div class="roadmap">
+    <div class="rm-col rm-find">
+      <div class="rm-col-head">из §05 · что нашёл</div>
+      <ul class="rm-list">
+        <li class="rm-card find" data-pair="p1">
+          <span class="rm-tag">E1 · E3-v2 · E4</span>
+          <div class="rm-title">Лучший слой — не последний</div>
+          <div class="rm-metric">L4 vs L12: +0.031 F1 на промоторе</div>
+          <p class="rm-note">При чтении с L4 GENA-LM выигрывает 3 из 4 у HyenaDNA — last-layer версия проигрывала.</p>
+        </li>
+        <li class="rm-card find" data-pair="p2">
+          <span class="rm-tag">E5 · E5-control</span>
+          <div class="rm-title">CTCF выучен каузально</div>
+          <div class="rm-metric">r = 0.893 · ×15 vs control</div>
+          <p class="rm-note">Замены в мотиве сдвигают эмбеддинг в 15 раз сильнее, чем замены на случайных позициях.</p>
+        </li>
+        <li class="rm-card find" data-pair="p3">
+          <span class="rm-tag">E6 · E7</span>
+          <div class="rm-title">Frozen GENA даёт мало над baseline</div>
+          <div class="rm-metric">+1.1 % AUROC vs 3-mer · gap до fine-tune ≈ +0.04</div>
+          <p class="rm-note">110M параметров поверх 65-признаков логреги — всего 1.1 % AUROC.</p>
+        </li>
+      </ul>
     </div>
-    <div class="prop-meta">
-      <span>impact <span class="delta">+0.09 AUC</span></span>
-      <span>effort 1 неделя</span>
-    </div>
-  </div>
 
-  <div class="prop">
-    <div class="prop-rank">2</div>
-    <div class="prop-body">
-      <h4>Reverse-complement equivariance через архитектуру</h4>
-      <p>
-        ДНК симметрична: одна и та же функция на обеих цепях. GENA-LM учит это через
-        аугментацию — Caduceus получает даром через BiMamba. Встроить equivariant linear
-        layer в GENA-LM и измерить parity-compute сравнение.
-      </p>
+    <div class="rm-arrows" aria-hidden="true">
+      <svg viewBox="0 0 70 360" preserveAspectRatio="none">
+        <defs>
+          <marker id="rm-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#E94B8B"/>
+          </marker>
+        </defs>
+        <path class="rm-arrow" data-pair="p1" d="M2,40  C35,40  35,40  68,40"  stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah)" opacity="0.85"/>
+        <path class="rm-arrow" data-pair="p2" d="M2,180 C35,180 35,180 68,180" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah)" opacity="0.85"/>
+        <path class="rm-arrow" data-pair="p3" d="M2,320 C35,320 35,320 68,320" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah)" opacity="0.85"/>
+      </svg>
     </div>
-    <div class="prop-meta">
-      <span>impact <span class="delta">+ symm.</span></span>
-      <span>effort 2 недели</span>
-    </div>
-  </div>
 
-  <div class="prop">
-    <div class="prop-rank">3</div>
-    <div class="prop-body">
-      <h4>Active learning для cross-species transfer</h4>
-      <p>
-        F1 0.95 на млекопитающих, 0.7 на беспозвоночных. Выбирать для разметки те
-        последовательности, на которых модель максимально не уверена. Потенциал: достичь
-        species-specific уровня с в 5–10× меньшим числом размеченных примеров.
-      </p>
-    </div>
-    <div class="prop-meta">
-      <span>impact <span class="delta">5–10× ↓ labels</span></span>
-      <span>effort 1 неделя</span>
+    <div class="rm-col rm-prop">
+      <div class="rm-col-head">что предлагаю развить</div>
+      <ul class="rm-list">
+        <li class="rm-card prop" data-pair="p1">
+          <div class="rm-prop-head"><span class="rm-ord">P1</span><span class="rm-source">← E1 · E3-v2</span></div>
+          <div class="rm-title">Сделать «лучший слой» дефолтом</div>
+          <p class="rm-note">Отчитывать в любой DNA-модели F1 на best-per-task слое, а не только на последнем. Проверить на HyenaDNA и Caduceus — это паттерн только GENA-LM или универсальный.</p>
+          <div class="rm-meta">
+            <span class="rm-impact">+0.03–0.05 F1 «бесплатно»</span>
+            <span class="rm-effort">1–2 недели</span>
+          </div>
+        </li>
+        <li class="rm-card prop" data-pair="p2">
+          <div class="rm-prop-head"><span class="rm-ord">P2</span><span class="rm-source">← E5</span></div>
+          <div class="rm-title">Каузальная проверка для других мотивов</div>
+          <p class="rm-note">Расширить saturation mutagenesis на GATA2, ATF1, NRF1 (мотивы из Fig 2 оригинальной статьи) и на конкурирующие модели. Проверить, универсально ли «GENA-LM учит биологию».</p>
+          <div class="rm-meta">
+            <span class="rm-impact">проверка универсальности</span>
+            <span class="rm-effort">1 неделя</span>
+          </div>
+        </li>
+        <li class="rm-card prop" data-pair="p3">
+          <div class="rm-prop-head"><span class="rm-ord">P3</span><span class="rm-source">← E6 · E7</span></div>
+          <div class="rm-title">Полный DART-Eval + sweep по эпохам fine-tune</div>
+          <p class="rm-note">Заменить наш OCR-proxy полноценным DART-Eval Task 2/4 pipeline. Дополнительно — кривая F1 от 0 эпох до 0.94, чтобы было видно сколько fine-tune'а нужно для production.</p>
+          <div class="rm-meta">
+            <span class="rm-impact">критика → формальный benchmark</span>
+            <span class="rm-effort">2 недели</span>
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
 </section>
