@@ -1,4 +1,4 @@
-# landing/
+# docs/
 
 Interactive landing page that accompanies the Research Proposal — a 5-minute scrollytelling
 companion to `../proposal/proposal.pdf` with interactive charts of the experiment results.
@@ -21,6 +21,5 @@ are authoritative for re-runs and citations.
 
 ## Build & deploy
 
-The landing is generated as a static site (HTML + JS bundle) and served from this folder via
-GitHub Pages (`Settings → Pages → main /landing`). A `DEPLOY.md` will be written alongside the
-build with the exact publish steps.
+The landing is a single static HTML file served from this folder via
+GitHub Pages (`Settings → Pages → main /docs`). No build step is required.
