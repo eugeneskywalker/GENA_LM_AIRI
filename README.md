@@ -9,6 +9,7 @@ Independent evaluation and extension of:
 > [GitHub](https://github.com/AIRI-Institute/GENA_LM) · [HuggingFace](https://huggingface.co/AIRI-Institute) · [Web service](https://dnalm.airi.net)
 
 **Read the proposal:** [`proposal/proposal.md`](proposal/proposal.md)
+**Interactive landing:** <https://eugeneskywalker.github.io/GENA_LM_AIRI/>
 
 ## What this is
 

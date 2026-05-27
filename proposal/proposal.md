@@ -4,6 +4,7 @@
 **Автор:** *Korshunov E., bioinformatics student*
 **Reviewed paper:** Fishman, Kuratov, Shmelev, Petrov, Penzar, Shepelin, Chekanov, Kardymon, Burtsev. **GENA-LM: a family of open-source foundational DNA language models for long sequences.** *Nucleic Acids Research*, 53(2), gkae1310 (2025). DOI: [10.1093/nar/gkae1310](https://doi.org/10.1093/nar/gkae1310).
 **Code & results:** <https://github.com/eugeneskywalker/GENA_LM_AIRI>
+**Interactive analysis:** <https://eugeneskywalker.github.io/GENA_LM_AIRI/>
 
 > *Venue note: NAR is a Q1 bioinformatics journal (IF ≈ 16.6, 2024) — equivalent in prestige to CORE A\* conferences in adjacent fields. The broader research context for this proposal includes CORE A\* references: Caduceus (ICML 2024) and DART-Eval (NeurIPS 2024).*
 
