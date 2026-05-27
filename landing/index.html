@@ -4344,7 +4344,6 @@
       <div class="chart-toggle" id="e3-toggle">
         <button data-view="last_layer" class="toggle-btn active" type="button">Последний слой (L12)</button>
         <button data-view="best_layer" class="toggle-btn" type="button">Лучший слой для каждой задачи</button>
-        <button data-view="all_methods" class="toggle-btn" type="button">А что если сравнить со всеми сразу?</button>
       </div>
       <div class="chart-headline" id="e3-headline"></div>
       <svg class="svg-chart" id="e3-chart" viewBox="0 0 620 280"></svg>
@@ -4447,23 +4446,6 @@
       </div>
     </div>
 
-    <div class="rm-card find" data-pair="p3">
-      <div class="rm-title">Без дообучения модель не лучше простого метода</div>
-      <p class="rm-note">Замороженная GENA-LM (110 миллионов параметров) обыгрывает простую регрессию всего на 1 %. Заявленные в статье 94 % достигаются только с дообучением.</p>
-    </div>
-    <div class="rm-arrow-cell" data-pair="p3" aria-hidden="true">
-      <svg viewBox="0 0 70 20" preserveAspectRatio="none">
-        <defs><marker id="rm-ah-p3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E94B8B"/></marker></defs>
-        <path class="rm-arrow" data-pair="p3" d="M2,10 L62,10" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah-p3)" opacity="0.85"/>
-      </svg>
-    </div>
-    <div class="rm-card prop" data-pair="p3">
-      <div class="rm-title">Измерить, сколько дообучения реально нужно</div>
-      <p class="rm-note">Заменить мой упрощённый замер стандартным тестом DART-Eval. Построить кривую: за какое время модель доходит от 1 % до 94 %.</p>
-      <div class="rm-meta">
-        <span class="rm-impact">упрощённая проверка → стандартный тест</span>
-      </div>
-    </div>
   </div>
 </section>
 
