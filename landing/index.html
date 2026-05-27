@@ -280,12 +280,21 @@
   .chart .cap {
     font-family: var(--font-mono); font-size: 11px; color: var(--gray);
     letter-spacing: 0.05em; margin-top: 10px; border-top: 1px solid var(--hairline); padding-top: 8px;
+    white-space: pre-line;
   }
   .chart .cap .num { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .chart .cap.cap-tight {
+    margin-top: 6px; border-top: none; padding-top: 0;
+  }
 
   .readout {
-    display: flex; gap: 28px; align-items: baseline; margin: 10px 0 16px 0; flex-wrap: wrap;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+    align-items: start; margin: 10px 0 22px 0;
   }
+  @media (max-width: 720px) {
+    .readout { grid-template-columns: 1fr; }
+  }
+  .readout > div { display: flex; flex-direction: column; gap: 6px; }
   .readout .big {
     font-family: var(--font-display); font-size: 56px; line-height: 1;
     letter-spacing: -0.02em; font-weight: 400;
@@ -294,11 +303,21 @@
     -webkit-text-fill-color: transparent;
   }
   .readout .big-ink { color: var(--ink); -webkit-text-fill-color: var(--ink); background: none; }
+  .rainbow-word {
+    background: var(--dna-gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+  }
   .readout .lbl {
     font-family: var(--font-mono); font-size: 11px; color: var(--gray);
     letter-spacing: 0.1em; text-transform: uppercase;
     border-left: 1px solid var(--hairline); padding-left: 14px;
-    max-width: 200px;
+    max-width: 280px;
+  }
+  .readout-note {
+    margin: 4px 0 0; font-size: 13px; line-height: 1.55;
+    color: var(--gray); max-width: 380px;
   }
 
   .refs { margin-top: 56px; border-top: 1px solid var(--ink); padding-top: 18px; }
@@ -701,22 +720,27 @@
   }
   .roadmap {
     display: grid; grid-template-columns: 1fr 70px 1.3fr;
-    gap: 0; margin: 24px 0; align-items: start;
+    column-gap: 0; row-gap: 18px;
+    margin: 24px 0; align-items: stretch;
   }
   @media (max-width: 720px) {
-    .roadmap { grid-template-columns: 1fr; }
-    .rm-arrows { display: none; }
+    .roadmap { grid-template-columns: 1fr; row-gap: 14px; }
+    .rm-arrow-cell, .rm-head-spacer { display: none; }
   }
   .rm-col-head {
     font-family: var(--font-mono); font-size: 10px;
     letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--gray); margin-bottom: 12px; padding-bottom: 6px;
+    color: var(--gray); margin-bottom: 4px; padding-bottom: 6px;
     border-bottom: 1px dashed var(--hairline);
   }
-  .rm-list { list-style: none; margin: 0; padding: 0;
-             display: flex; flex-direction: column; gap: 18px; }
+  .rm-arrow-cell {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 6px;
+  }
+  .rm-arrow-cell svg { width: 100%; height: 20px; display: block; }
   .rm-card {
     padding: 12px 14px; border-radius: 4px;
+    display: flex; flex-direction: column;
     transition: opacity .15s ease, border-color .15s ease, background-color .15s ease;
   }
   .rm-card.find {
@@ -732,13 +756,13 @@
     letter-spacing: 0.06em; color: #2E5D40; background: #D9ECDF;
     padding: 1px 6px; border-radius: 2px; margin-bottom: 6px;
   }
-  .rm-title { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--ink); }
+  .rm-title { font-size: 12px; font-weight: 600; line-height: 1.35; color: var(--ink); }
   .rm-metric {
-    font-family: var(--font-mono); font-size: 11px;
+    font-family: var(--font-mono); font-size: 10px;
     color: #2E5D40; margin-top: 5px; font-weight: 500;
   }
   .rm-card.prop .rm-metric { color: var(--magenta); }
-  .rm-note { font-size: 12px; color: var(--gray); margin: 6px 0 0; line-height: 1.5; }
+  .rm-note { font-size: 11px; color: var(--gray); margin: 5px 0 0; line-height: 1.5; }
   .rm-prop-head {
     display: flex; justify-content: space-between; align-items: baseline;
     margin-bottom: 5px;
@@ -753,13 +777,12 @@
     padding: 1px 6px; border-radius: 2px;
   }
   .rm-meta {
-    display: flex; gap: 14px; margin-top: 9px;
+    display: flex; gap: 14px; margin-top: auto;
     padding-top: 8px; border-top: 1px dashed #EBD9E4;
     font-family: var(--font-mono); font-size: 10px;
   }
   .rm-impact { color: #1A8A4A; }
   .rm-effort { color: var(--gray); }
-  .rm-arrows svg { width: 100%; height: 360px; }
   .rm-arrow { transition: opacity .15s ease; }
   .rm-arrow.dimmed { opacity: 0.15; }
 
@@ -3535,7 +3558,6 @@
 }
 </script>
 
-
 <div class="shell">
 
 <aside class="sidebar">
@@ -3547,10 +3569,9 @@
     <li><a href="#strength"   data-dna="#C551AA"><span class="sb-count">03</span>Сильные стороны</a></li>
     <li><a href="#weakness"   data-dna="#EA476F"><span class="sb-count">04</span>Слабые стороны</a></li>
     <li><a href="#exp"        data-dna="#ED443C"><span class="sb-count">05</span>Что я измерил</a></li>
-    <li class="part-mark">Часть 2 · развитие</li>
-    <li><a href="#proposal"   data-dna="#F56322"><span class="sb-count">06</span>Дорожная карта</a></li>
-    <li><a href="#correction" data-dna="#FA921A"><span class="sb-count">07</span>Одна поправка</a></li>
-    <li><a href="#refs"       data-dna="#E0A700"><span class="sb-count">08</span>Источники</a></li>
+    <li class="part-mark">Часть 2 · развитие идеи</li>
+    <li><a href="#proposal"   data-dna="#F56322"><span class="sb-count">06</span>Что предлагаю сделать</a></li>
+    <li><a href="#refs"       data-dna="#E0A700"><span class="sb-count">07</span>Источники</a></li>
   </ul>
 </aside>
 
@@ -4234,18 +4255,18 @@
       <div class="study-row" data-stage="0" data-target="exp-5-1">
         <div class="study-cell col-shown">
           <div class="col-h">Что авторы показали</div>
-          <div class="col-body">Проверили модель на 9 задачах, но всегда брали ответ с последнего слоя модели.</div>
+          <div class="col-body">Под каждую из 9 биологических задач (например, «это промотор?») <b>дополнительно обучали модель</b> — подгоняли все её 110 миллионов параметров. Ответ читали только с последнего слоя.</div>
           <div class="col-arrow">→</div>
         </div>
         <div class="study-cell col-gap">
           <div class="col-h">А чего не проверили</div>
-          <div class="col-body">А вдруг другие слои дают ответ точнее? Это в статье не проверяли.</div>
+          <div class="col-body">А что, если модель уже знает ответ внутри себя — на каком-то из своих слоёв — <b>ещё до того, как её подгонят под задачу?</b> В статье это не проверяли.</div>
           <div class="col-hint">▾ клик</div>
           <div class="col-arrow">→</div>
         </div>
         <div class="study-cell col-mine">
           <div class="col-h">Что я сделал</div>
-          <div class="col-body"><span class="exp-num">5.1</span> Проверил каждый слой модели отдельно на 4 задачах. <span class="jump-hint">↓ к эксперименту</span></div>
+          <div class="col-body"><span class="exp-num">5.1</span> <b>Не обучал модель заново</b> — заморозил её и прочитал ответ с каждого слоя по отдельности на 4 задачах (промотор, энхансер, открытая ДНК, кодирующие участки). Хотел понять, что модель знает <b>сама</b>, без подгонки. <span class="jump-hint">↓ к эксперименту</span></div>
           <div class="col-hint">▾ клик</div>
         </div>
       </div>
@@ -4314,16 +4335,16 @@
 
   <div class="sub" id="exp-5-2">
     <div class="lead"><span class="magenta">5.2</span> · gena-lm vs hyenadna</div>
-    <h3>«HyenaDNA побеждает 3 из 4» — это артефакт</h3>
+    <h3>Маленькая модель «победила» большую. Спойлер: она этого не делала</h3>
     <p>
-      Наивное сравнение: GENA-LM на последнем слое vs HyenaDNA-tiny (251× меньше параметров) —
-      HyenaDNA побеждает на 3 задачах из 4. Сравнение с E1-лучшим слоем — картина переворачивается.
+      Кто сильнее — большая GENA-LM или HyenaDNA в 250 раз меньше? Ответ зависит от того, как считать.
     </p>
 
     <div class="chart">
       <div class="chart-toggle" id="e3-toggle">
         <button data-view="last_layer" class="toggle-btn active" type="button">Последний слой (L12)</button>
         <button data-view="best_layer" class="toggle-btn" type="button">Лучший слой для каждой задачи</button>
+        <button data-view="all_methods" class="toggle-btn" type="button">А что если сравнить со всеми сразу?</button>
       </div>
       <div class="chart-headline" id="e3-headline"></div>
       <svg class="svg-chart" id="e3-chart" viewBox="0 0 620 280"></svg>
@@ -4333,146 +4354,122 @@
   </div>
 
   <div class="sub" id="exp-5-3">
-    <div class="lead"><span class="magenta">5.3</span> · ctcf saturation mutagenesis</div>
-    <h3>Модель действительно знает CTCF</h3>
+    <div class="lead"><span class="magenta">5.3</span> · проверка причины</div>
+    <h3>Модель действительно выучила биологию — а не просто запомнила «редкие буквы»</h3>
     <p>
-      Авторы используют Integrated Gradients для интерпретируемости — но это только корреляция.
-      Я сделал in-silico saturation mutagenesis: меняем каждую позицию мотива на 3 другие
-      буквы и смотрим на сдвиг эмбеддинга. Это даёт <em>каузальный</em> ответ.
+      <span class="rainbow-word">CTCF</span> — белок-регулятор, который узнаёт короткий участок ДНК из 19 букв. Авторы статьи показали, что модель «смотрит» на этот участок — это корреляция. Я проверил жёстче: сам поменял буквы и посмотрел, действительно ли они ей важны.
     </p>
 
     <div class="readout">
       <div>
         <div class="big">r = 0.893</div>
-        <div class="lbl">эффект мутации ↔ информативность позиции (PWM)</div>
+        <div class="lbl">важность позиции ↔ реакция модели</div>
+        <p class="readout-note">Чем важнее буква в природе — тем сильнее реакция модели. Корреляция почти максимальная.</p>
       </div>
       <div>
         <div class="big big-ink">15×</div>
-        <div class="lbl">сильнее, чем negative control на случайных позициях</div>
+        <div class="lbl">сильнее, чем замены вне мотива</div>
+        <p class="readout-note">Вне мотива реакция в 15 раз слабее. Модель реагирует не на любое изменение — а именно на смысл.</p>
       </div>
     </div>
 
     <div class="chart">
       <div class="heatmap-pair" id="e5-pair">
         <div class="heatmap-block">
-          <div class="hm-title">Мотив CTCF (19 п.н.)</div>
+          <div class="hm-title">Реакция модели на каждую возможную замену внутри мотива CTCF</div>
           <svg class="svg-chart" id="e5-motif-chart" viewBox="0 0 620 150"></svg>
         </div>
         <div class="heatmap-block">
-          <div class="hm-title hm-control">Контроль — случайные позиции вне мотива</div>
-          <svg class="svg-chart" id="e5-control-chart" viewBox="0 0 620 150"></svg>
+          <div class="hm-title hm-control">Контроль: те же замены, но в случайных местах вне мотива</div>
+          <svg class="svg-chart" id="e5-control-chart" viewBox="0 0 620 112"></svg>
+          <div class="cap cap-tight">
+            Каждая клетка — одна замена буквы. Чем темнее, тем сильнее модель её заметила. Сверху — пёстро: модель реагирует. Снизу — почти белое: за пределами мотива её ничего не трогает.
+          </div>
         </div>
       </div>
       <div class="chart-tooltip" id="e5-tooltip" hidden></div>
-      <div class="cap">
-        Каждая клетка = средний сдвиг эмбеддинга при замене позиции на букву.
-        В мотиве (сверху) сдвиги в среднем в <span class="num">15 раз сильнее</span> чем в контроле (снизу) —
-        одна и та же шкала, одна и та же сетка, разные данные. Наведи курсор для точных чисел.
-      </div>
     </div>
   </div>
 </section>
 
 <div class="part-divider">
-  <div class="eyebrow"><span class="magenta">— часть 2 —</span> · развитие</div>
+  <div class="eyebrow"><span class="magenta">— часть 2 —</span> · развитие идеи</div>
   <p class="deck-2">
     От найденного — к тому, что предлагаю развить дальше.
   </p>
 </div>
 
 <section class="section" id="proposal">
-  <div class="eyebrow"><span class="num">06</span> · дорожная карта</div>
-  <h2>От моих экспериментов — к тому, что предлагаю развить</h2>
+  <div class="eyebrow"><span class="num">06</span> · что предлагаю сделать</div>
+  <h2>Что я нашёл — и что предлагаю развить</h2>
   <p class="rm-intro">
-    Слева — что я нашёл в экспериментах §05. Справа — что из этого логично развить дальше. Каждая стрелка — конкретный результат, ведущий к конкретному предложению.
+    Слева — главные находки исследования. Справа — что предлагаю проверить дальше. Стрелка связывает каждую находку с её естественным продолжением.
   </p>
 
   <div class="roadmap">
-    <div class="rm-col rm-find">
-      <div class="rm-col-head">из §05 · что нашёл</div>
-      <ul class="rm-list">
-        <li class="rm-card find" data-pair="p1">
-          <span class="rm-tag">E1 · E3-v2 · E4</span>
-          <div class="rm-title">Лучший слой — не последний</div>
-          <div class="rm-metric">L4 vs L12: +0.031 F1 на промоторе</div>
-          <p class="rm-note">При чтении с L4 GENA-LM выигрывает 3 из 4 у HyenaDNA — last-layer версия проигрывала.</p>
-        </li>
-        <li class="rm-card find" data-pair="p2">
-          <span class="rm-tag">E5 · E5-control</span>
-          <div class="rm-title">CTCF выучен каузально</div>
-          <div class="rm-metric">r = 0.893 · ×15 vs control</div>
-          <p class="rm-note">Замены в мотиве сдвигают эмбеддинг в 15 раз сильнее, чем замены на случайных позициях.</p>
-        </li>
-        <li class="rm-card find" data-pair="p3">
-          <span class="rm-tag">E6 · E7</span>
-          <div class="rm-title">Frozen GENA даёт мало над baseline</div>
-          <div class="rm-metric">+1.1 % AUROC vs 3-mer · gap до fine-tune ≈ +0.04</div>
-          <p class="rm-note">110M параметров поверх 65-признаков логреги — всего 1.1 % AUROC.</p>
-        </li>
-      </ul>
-    </div>
+    <div class="rm-col-head rm-head-left">что я нашёл</div>
+    <div class="rm-head-spacer" aria-hidden="true"></div>
+    <div class="rm-col-head rm-head-right">что предлагаю развить</div>
 
-    <div class="rm-arrows" aria-hidden="true">
-      <svg viewBox="0 0 70 360" preserveAspectRatio="none">
-        <defs>
-          <marker id="rm-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-            <path d="M0,0 L10,5 L0,10 z" fill="#E94B8B"/>
-          </marker>
-        </defs>
-        <path class="rm-arrow" data-pair="p1" d="M2,40  C35,40  35,40  68,40"  stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah)" opacity="0.85"/>
-        <path class="rm-arrow" data-pair="p2" d="M2,180 C35,180 35,180 68,180" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah)" opacity="0.85"/>
-        <path class="rm-arrow" data-pair="p3" d="M2,320 C35,320 35,320 68,320" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah)" opacity="0.85"/>
+    <div class="rm-card find" data-pair="p1">
+      <div class="rm-title">Лучший слой — не последний</div>
+      <p class="rm-note">Если читать ответ модели из середины, GENA-LM обходит HyenaDNA на трёх задачах из четырёх. С последнего слоя — проигрывает.</p>
+    </div>
+    <div class="rm-arrow-cell" data-pair="p1" aria-hidden="true">
+      <svg viewBox="0 0 70 20" preserveAspectRatio="none">
+        <defs><marker id="rm-ah-p1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E94B8B"/></marker></defs>
+        <path class="rm-arrow" data-pair="p1" d="M2,10 L62,10" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah-p1)" opacity="0.85"/>
       </svg>
     </div>
+    <div class="rm-card prop" data-pair="p1">
+      <div class="rm-title">Сделать «лучший слой» стандартом</div>
+      <p class="rm-note">Измерять модели по их лучшему слою. Проверить, работает ли это правило для других ДНК-моделей.</p>
+      <div class="rm-meta">
+        <span class="rm-impact">+3–5 % точности</span>
+      </div>
+    </div>
 
-    <div class="rm-col rm-prop">
-      <div class="rm-col-head">что предлагаю развить</div>
-      <ul class="rm-list">
-        <li class="rm-card prop" data-pair="p1">
-          <div class="rm-prop-head"><span class="rm-ord">P1</span><span class="rm-source">← E1 · E3-v2</span></div>
-          <div class="rm-title">Сделать «лучший слой» дефолтом</div>
-          <p class="rm-note">Отчитывать в любой DNA-модели F1 на best-per-task слое, а не только на последнем. Проверить на HyenaDNA и Caduceus — это паттерн только GENA-LM или универсальный.</p>
-          <div class="rm-meta">
-            <span class="rm-impact">+0.03–0.05 F1 «бесплатно»</span>
-            <span class="rm-effort">1–2 недели</span>
-          </div>
-        </li>
-        <li class="rm-card prop" data-pair="p2">
-          <div class="rm-prop-head"><span class="rm-ord">P2</span><span class="rm-source">← E5</span></div>
-          <div class="rm-title">Каузальная проверка для других мотивов</div>
-          <p class="rm-note">Расширить saturation mutagenesis на GATA2, ATF1, NRF1 (мотивы из Fig 2 оригинальной статьи) и на конкурирующие модели. Проверить, универсально ли «GENA-LM учит биологию».</p>
-          <div class="rm-meta">
-            <span class="rm-impact">проверка универсальности</span>
-            <span class="rm-effort">1 неделя</span>
-          </div>
-        </li>
-        <li class="rm-card prop" data-pair="p3">
-          <div class="rm-prop-head"><span class="rm-ord">P3</span><span class="rm-source">← E6 · E7</span></div>
-          <div class="rm-title">Полный DART-Eval + sweep по эпохам fine-tune</div>
-          <p class="rm-note">Заменить наш OCR-proxy полноценным DART-Eval Task 2/4 pipeline. Дополнительно — кривая F1 от 0 эпох до 0.94, чтобы было видно сколько fine-tune'а нужно для production.</p>
-          <div class="rm-meta">
-            <span class="rm-impact">критика → формальный benchmark</span>
-            <span class="rm-effort">2 недели</span>
-          </div>
-        </li>
-      </ul>
+    <div class="rm-card find" data-pair="p2">
+      <div class="rm-title">Модель действительно знает биологию</div>
+      <p class="rm-note">Замены внутри биологически важного участка трогают модель в 15 раз сильнее, чем замены в случайных местах. Это не угадывание.</p>
+    </div>
+    <div class="rm-arrow-cell" data-pair="p2" aria-hidden="true">
+      <svg viewBox="0 0 70 20" preserveAspectRatio="none">
+        <defs><marker id="rm-ah-p2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E94B8B"/></marker></defs>
+        <path class="rm-arrow" data-pair="p2" d="M2,10 L62,10" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah-p2)" opacity="0.85"/>
+      </svg>
+    </div>
+    <div class="rm-card prop" data-pair="p2">
+      <div class="rm-title">Повторить тест на других участках</div>
+      <p class="rm-note">Проверить ту же способность ещё на трёх известных биологических сигналах. И на других ДНК-моделях — общее ли это свойство или повезло с CTCF.</p>
+      <div class="rm-meta">
+        <span class="rm-impact">проверка универсальности</span>
+      </div>
+    </div>
+
+    <div class="rm-card find" data-pair="p3">
+      <div class="rm-title">Без дообучения модель не лучше простого метода</div>
+      <p class="rm-note">Замороженная GENA-LM (110 миллионов параметров) обыгрывает простую регрессию всего на 1 %. Заявленные в статье 94 % достигаются только с дообучением.</p>
+    </div>
+    <div class="rm-arrow-cell" data-pair="p3" aria-hidden="true">
+      <svg viewBox="0 0 70 20" preserveAspectRatio="none">
+        <defs><marker id="rm-ah-p3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E94B8B"/></marker></defs>
+        <path class="rm-arrow" data-pair="p3" d="M2,10 L62,10" stroke="#E94B8B" stroke-width="1.5" fill="none" marker-end="url(#rm-ah-p3)" opacity="0.85"/>
+      </svg>
+    </div>
+    <div class="rm-card prop" data-pair="p3">
+      <div class="rm-title">Измерить, сколько дообучения реально нужно</div>
+      <p class="rm-note">Заменить мой упрощённый замер стандартным тестом DART-Eval. Построить кривую: за какое время модель доходит от 1 % до 94 %.</p>
+      <div class="rm-meta">
+        <span class="rm-impact">упрощённая проверка → стандартный тест</span>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="section correction-hero" id="correction">
-  <div class="eyebrow"><span class="num">07</span> · одна поправка</div>
-  <div class="oc-source">← растёт из E3 vs E3-v2</div>
-  <p class="oc-quote">
-    Сравнивать модели не по последнему слою, а по тому, который <span class="oc-accent">лучший для каждой задачи</span>. Это переворачивает вывод: «маленькая модель бьёт большую» превращается в «правильно выбранный слой важнее количества параметров».
-  </p>
-  <p class="oc-numbers">
-    на промоторе: GENA-LM L4 = 0.808 ± 0.006 vs HyenaDNA = 0.790 ± 0.004 · на Coding: GENA-LM L5 = 0.915 vs HyenaDNA = 0.862 · источник: results/e3_v2_metrics.json
-  </p>
-</section>
 
 <section class="section refs" id="refs">
-  <div class="eyebrow"><span class="num">08</span> · источники и код</div>
+  <div class="eyebrow"><span class="num">07</span> · источники и код</div>
   <ol>
     <li id="ref-1">
       Fishman V., Kuratov Y., Shmelev A. et al.
@@ -4883,13 +4880,21 @@
 
     const raw = JSON.parse(document.getElementById('e3-data').textContent);
     const HEADLINES = {
-      last_layer: 'На последнем слое HyenaDNA побеждает 3 из 4 задач при 251× меньших параметрах.',
-      best_layer: 'На лучшем слое для каждой задачи GENA-LM выигрывает или ничья на 3 из 4.',
+      last_layer: 'Читаем ответ модели так, как принято в большинстве работ: с её самого последнего слоя.',
+      best_layer: 'Меняем одну деталь: у GENA-LM берём ответ не с последнего слоя, а оттуда, где у неё лежит биология (мы выяснили это в предыдущем разделе — для каждой задачи свой слой). HyenaDNA — без изменений.',
+      all_methods: 'А что если поставить на одну задачу сразу три способа — от простого счёта букв до большой модели — и посмотреть, кто лучше? Задача: «это открытая ДНК или нет?».',
     };
     const CAPTIONS = {
-      last_layer: 'Наивное сравнение. Маленькая HyenaDNA (0.4 M параметров) обходит большую GENA-LM (110 M) на промоторе, энхансере и OCR — выигрывает только на Coding.',
-      best_layer: 'Сравниваем GENA-LM не на L12, а на том слое, который E1 указывает лучшим для каждой задачи (L4 для промотора, L5 для Coding и т.д.). HyenaDNA читается с last layer как раньше.',
+      last_layer: 'Крошечная HyenaDNA — в 250 раз меньше GENA-LM — обходит её на трёх задачах из четырёх. GENA-LM выигрывает только на кодирующих участках ДНК. Для большой модели картина выглядит неудобно.',
+      best_layer: 'Счёт переворачивается: GENA-LM возвращает себе три победы из четырёх. Одна методическая мелочь — где брать ответ модели — меняет вывод сравнения на противоположный.',
+      all_methods: 'Три способа упираются примерно в одну стенку — около 0.61–0.65. Большая GENA-LM (110 миллионов параметров), прочитанная «как есть», даёт 0.611 — почти то же, что простой счёт букв (0.609). На этой задаче размер модели почти не помогает.\n\n«Простой счёт букв» — для каждого куска ДНК считаем, сколько раз встречается каждая тройка букв (AAA, AAC, AAG, …, TTT — всего 64 тройки). Получаются 64 числа, и по ним простая модель решает, открытая ли это ДНК. Никакой нейросети.',
     };
+    // Three-method comparison on OCR (data from results/e6_metrics.json, test set, mean across seeds)
+    const ALL_METHODS_DATA = [
+      { name: 'HyenaDNA, без обучения', params: '0.4 M параметров',  f1: 0.646, color: '#9A958E' },
+      { name: 'GENA-LM, без обучения',  params: '110 M параметров',  f1: 0.611, color: '#1A1A1A', focus: true },
+      { name: 'Простой счёт букв',      params: '64 числа',           f1: 0.609, color: '#C9C3B8' },
+    ];
     // display names for task labels on chart and in tooltip
     const TASK_DISPLAY = {
       Promoter: 'Promoter',
@@ -4909,7 +4914,40 @@
 
     const xOf = (f1) => PAD_L + (f1 - 0.5) / 0.5 * innerW;
 
+    function renderAllMethods() {
+      const PAD_L2 = 220;
+      const innerW2 = W - PAD_L2 - PAD_R;
+      const xOf2 = (f) => PAD_L2 + (f - 0.5) / 0.5 * innerW2;
+      const N = ALL_METHODS_DATA.length;
+      const ROW_H2 = innerH / N;
+      const BAR_H2 = 18;
+
+      let svgHtml = '';
+      for (const f of [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]) {
+        const x = xOf2(f);
+        svgHtml += `<text x="${x}" y="${H - PAD_B + 16}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" style="fill: #6E6963">${f.toFixed(1)}</text>`;
+        svgHtml += `<line x1="${x}" y1="${PAD_T}" x2="${x}" y2="${H - PAD_B}" style="stroke: #D9D4C8" stroke-dasharray="2 3" opacity="0.4"/>`;
+      }
+      svgHtml += `<text x="${PAD_L2 + innerW2 / 2}" y="${H - 4}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" style="fill: #6E6963" letter-spacing="0.06em">F1 SCORE</text>`;
+
+      ALL_METHODS_DATA.forEach((m, i) => {
+        const yCenter = PAD_T + i * ROW_H2 + ROW_H2 / 2;
+        const yBar = yCenter - BAR_H2 / 2;
+        const w = Math.max(0, xOf2(m.f1) - PAD_L2);
+        svgHtml += `<text x="${PAD_L2 - 12}" y="${yCenter - 1}" text-anchor="end" font-family="Source Sans 3" font-size="13" style="fill: #1A1A1A; font-weight: ${m.focus ? '600' : '400'}">${m.name}</text>`;
+        svgHtml += `<text x="${PAD_L2 - 12}" y="${yCenter + 14}" text-anchor="end" font-family="JetBrains Mono" font-size="9" style="fill: #9A958E" letter-spacing="0.04em">${m.params}</text>`;
+        svgHtml += `<rect x="${PAD_L2}" y="${yBar}" width="${w}" height="${BAR_H2}" style="fill: ${m.color}"/>`;
+        svgHtml += `<text x="${xOf2(m.f1) + 8}" y="${yBar + BAR_H2 - 4}" font-family="JetBrains Mono" font-size="11" style="fill: ${m.focus ? '#1A1A1A' : '#6E6963'}; font-weight: ${m.focus ? '600' : '400'}">${m.f1.toFixed(3)}</text>`;
+      });
+
+      svg.innerHTML = svgHtml;
+      headlineEl.textContent = HEADLINES['all_methods'];
+      capEl.textContent = CAPTIONS['all_methods'];
+      tooltip.hidden = true;
+    }
+
     function render(view) {
+      if (view === 'all_methods') { renderAllMethods(); return; }
       const block = raw.comparisons[view];
       let svgHtml = '';
 
@@ -5029,7 +5067,7 @@
           svgHtml += `<text x="${x}" y="${cy}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" style="fill: #1A1A1A" font-weight="600">${ch}</text>`;
         });
         const labelY = cy + 14;
-        svgHtml += `<text x="${ORIGIN_X}" y="${labelY}" font-family="JetBrains Mono" font-size="9" style="fill: #6E6963" letter-spacing="0.08em">CONSENSUS</text>`;
+        svgHtml += `<text x="${ORIGIN_X}" y="${labelY}" font-family="JetBrains Mono" font-size="9" style="fill: #6E6963" letter-spacing="0.08em">ИСХОДНАЯ БУКВА</text>`;
       }
 
       svg.innerHTML = svgHtml;
@@ -5038,13 +5076,16 @@
       svg.querySelectorAll('.hm-cell').forEach(cell => {
         cell.addEventListener('mouseenter', () => {
           const isCtrl = cell.dataset.control === '1';
+          const pwmPct = cell.dataset.pwm !== '—' ? (parseFloat(cell.dataset.pwm) * 100).toFixed(0) + '%' : '—';
           tooltip.hidden = false;
-          tooltip.innerHTML = `<span class="ttl">${isCtrl ? 'control' : 'motif'} · поз ${cell.dataset.pos} · ${cell.dataset.base}</span><br>Δ эмбеддинга = ${cell.dataset.value}${isCtrl ? '' : '<br>PWM prob = ' + cell.dataset.pwm}`;
+          tooltip.innerHTML = `<span class="ttl">${isCtrl ? 'контроль' : 'мотив CTCF'} · позиция ${cell.dataset.pos} · буква ${cell.dataset.base}</span><br>реакция модели = ${cell.dataset.value}${isCtrl ? '' : '<br>как часто встречается в природе: ' + pwmPct}`;
           const rect = svg.getBoundingClientRect();
+          const vb = svg.getAttribute('viewBox').split(' ').map(Number);
+          const vbW = vb[2], vbH = vb[3];
           const cellW = parseFloat(cell.getAttribute('width'));
           const cellCx = parseFloat(cell.getAttribute('x')) + cellW / 2;
           const cellCy = parseFloat(cell.getAttribute('y'));
-          const scaleX = rect.width / 620, scaleY = rect.height / 150;
+          const scaleX = rect.width / vbW, scaleY = rect.height / vbH;
           tooltip.style.left = (rect.left + cellCx * scaleX) + 'px';
           tooltip.style.top = (rect.top + cellCy * scaleY - 6) + 'px';
         });
