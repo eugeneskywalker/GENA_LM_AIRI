@@ -1,19 +1,22 @@
-# GENA-LM Critical Review with Layer-Aware Reproducibility Experiments
+# GENA-LM — Critical Analysis and Reproducibility Experiments
 
-**Research Proposal for "Лето с AIRI 2026" summer school** — author: *Korshunov E., bioinformatics student*.
-**Repo:** <https://github.com/eugeneskywalker/GENA_LM_AIRI>
+**Research Proposal for "Лето с AIRI 2026" summer school**
+Author: *Korshunov Eugene* — Pirogov Russian National Research Medical University (РНИМУ), 4th year of 6, Medical Cybernetics / Bioinformatics track.
 
-Independent evaluation and extension of:
+Reviewed paper:
 
 > Fishman V., Kuratov Y., Shmelev A., Petrov M., Penzar D., Shepelin D., Chekanov N., Kardymon O., Burtsev M. (2025). **GENA-LM: a family of open-source foundational DNA language models for long sequences.** *Nucleic Acids Research*, 53(2), gkae1310. DOI: [10.1093/nar/gkae1310](https://doi.org/10.1093/nar/gkae1310).
-> [GitHub](https://github.com/AIRI-Institute/GENA_LM) · [HuggingFace](https://huggingface.co/AIRI-Institute) · [Web service](https://dnalm.airi.net)
+> [GENA-LM GitHub](https://github.com/AIRI-Institute/GENA_LM) · [HuggingFace](https://huggingface.co/AIRI-Institute) · [Web service](https://dnalm.airi.net)
 
-**Read the proposal:** [`proposal/proposal.md`](proposal/proposal.md)
-**Interactive landing:** <https://eugeneskywalker.github.io/GENA_LM_AIRI/>
+## Where to read
 
-## What this is
+- **Interactive landing** (primary, Russian): <https://eugeneskywalker.github.io/GENA_LM_AIRI/> — narrative review with interactive charts.
+- **PDF for AIRI form** (2 pages): [`proposal/proposal.pdf`](proposal/proposal.pdf) — invitation-style summary mirroring the landing.
+- This repo: reproducible code and raw result tables for the 7 experiments.
 
-A two-page Research Proposal + reproducible code that applies two recent methodological frameworks to GENA-LM:
+## What's inside
+
+Independent analysis of GENA-LM applying two methodological frameworks:
 
 1. **BERTology** (Tenney 2019, Vig 2021) — *where* in a frozen model task-specific features accumulate.
 2. **DART-Eval critique** (Patel et al., NeurIPS 2024) — do DNA foundation models justify their compute over lightweight baselines?
@@ -173,9 +176,13 @@ Important caveats on how to read the head-to-head and DART-Eval-inspired results
 
 ```
 gena-lm-airi-2026/
+├── docs/                                 # Interactive landing — served via GitHub Pages
+│   ├── index.html                        # https://eugeneskywalker.github.io/GENA_LM_AIRI/
+│   └── data/                             # JSON datasets for the landing charts (E1, E3, E5)
 ├── proposal/
-│   ├── proposal.md                       # Research Proposal (2 pages)
-│   └── proposal.pdf                      # Compiled PDF
+│   ├── proposal.md                       # PDF source (HTML body + CSS)
+│   ├── proposal.pdf                      # 2-page invitation/summary for the AIRI form
+│   └── invitation.css                    # Design system for the PDF render
 ├── experiments/
 │   ├── sanity_check.py                   # GPU + model load verification
 │   ├── e1_layerwise_probing.py           # E1 — layer-wise BERTology probing (bert-base, 13 layers)
